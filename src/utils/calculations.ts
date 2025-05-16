@@ -3,6 +3,7 @@ export interface Workday {
   id: string;
   date: string;
   dayRate: number;
+  archived?: boolean;
 }
 
 export interface Expense {
@@ -11,21 +12,24 @@ export interface Expense {
   amount: number;
   description: string;
   type: 'expense' | 'payment';
+  archived?: boolean;
 }
 
 export const calculateTotalEarnings = (workdays: Workday[]): number => {
-  return workdays.reduce((total, day) => total + day.dayRate, 0);
+  return workdays
+    .filter(day => !day.archived)
+    .reduce((total, day) => total + day.dayRate, 0);
 };
 
 export const calculateTotalExpenses = (expenses: Expense[]): number => {
   return expenses
-    .filter(expense => expense.type === 'expense')
+    .filter(expense => expense.type === 'expense' && !expense.archived)
     .reduce((total, expense) => total + expense.amount, 0);
 };
 
 export const calculateTotalPayments = (expenses: Expense[]): number => {
   return expenses
-    .filter(expense => expense.type === 'payment')
+    .filter(expense => expense.type === 'payment' && !expense.archived)
     .reduce((total, expense) => total + expense.amount, 0);
 };
 
@@ -55,4 +59,40 @@ export const getCurrentDate = (): string => {
 
 export const generateId = (): string => {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
+};
+
+// Archive-related functions
+export const archiveAllRecords = (workdays: Workday[], expenses: Expense[]): [Workday[], Expense[]] => {
+  const archivedWorkdays = workdays.map(day => ({ ...day, archived: true }));
+  const archivedExpenses = expenses.map(expense => ({ ...expense, archived: true }));
+  
+  return [archivedWorkdays, archivedExpenses];
+};
+
+export const getActiveRecords = (workdays: Workday[], expenses: Expense[]): [Workday[], Expense[]] => {
+  return [
+    workdays.filter(day => !day.archived),
+    expenses.filter(expense => !expense.archived)
+  ];
+};
+
+export const getArchivedRecords = (workdays: Workday[], expenses: Expense[]): [Workday[], Expense[]] => {
+  return [
+    workdays.filter(day => day.archived),
+    expenses.filter(expense => day.archived)
+  ];
+};
+
+export const restoreRecord = (id: string, isWorkday: boolean, workdays: Workday[], expenses: Expense[]): [Workday[], Expense[]] => {
+  if (isWorkday) {
+    return [
+      workdays.map(day => day.id === id ? { ...day, archived: false } : day),
+      expenses
+    ];
+  } else {
+    return [
+      workdays,
+      expenses.map(expense => expense.id === id ? { ...expense, archived: false } : expense)
+    ];
+  }
 };
