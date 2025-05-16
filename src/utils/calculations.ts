@@ -103,17 +103,19 @@ export const formatDateWithHijri = (dateString: string): string => {
     const date = new Date(dateString);
     
     // Format Gregorian date (YYYY/MM/DD)
-    const gregorianDate = new Intl.DateTimeFormat('ar-SA-u-nu-latn', {
+    const gregorianDate = new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit'
+      day: '2-digit',
+      weekday: 'long'
     }).format(date).replace(/\//g, '/');
     
-    // Format Hijri date
+    // Format Hijri date with month name and year
     const hijriDate = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
       day: 'numeric',
       month: 'long',
-      year: 'numeric'
+      year: 'numeric',
+      weekday: 'long'
     }).format(date);
     
     return `${hijriDate} - ${gregorianDate}`;
