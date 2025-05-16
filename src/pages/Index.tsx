@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Workday, Expense, calculateRemainingBalance, archiveAllRecords } from '@/utils/calculations';
 import DataSummary from '@/components/DataSummary';
@@ -11,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Archive } from 'lucide-react';
+import { Archive, Trash2 } from 'lucide-react';
 
 const Index = () => {
   const [workdays, setWorkdays] = useState<Workday[]>([]);
@@ -74,6 +73,12 @@ const Index = () => {
   const handleRestoreExpense = (id: string) => {
     setExpenses(expenses.map(expense => expense.id === id ? { ...expense, archived: false } : expense));
     toast.success('تم استعادة العنصر بنجاح');
+  };
+  
+  const handleClearAllData = () => {
+    setWorkdays([]);
+    setExpenses([]);
+    toast.success('تم حذف جميع البيانات بنجاح');
   };
   
   // Filter active and archived records
@@ -139,6 +144,37 @@ const Index = () => {
                   <AlertDialogFooter>
                     <AlertDialogCancel>إلغاء</AlertDialogCancel>
                     <AlertDialogAction onClick={handleArchiveAccount}>نعم، أرشفة الحساب</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              
+              {/* New Clear All Data Button */}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="destructive" 
+                    className="w-full font-bold"
+                    disabled={workdays.length === 0 && expenses.length === 0}
+                  >
+                    <Trash2 className="ml-2 h-4 w-4" /> حذف جميع البيانات
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>هل أنت متأكد من حذف جميع البيانات؟</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      <p>سيتم حذف جميع البيانات بشكل نهائي، بما في ذلك السجلات المؤرشفة.</p>
+                      <p className="mt-2 font-bold text-destructive">لا يمكن التراجع عن هذه العملية.</p>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleClearAllData}
+                      className="bg-destructive hover:bg-destructive/90"
+                    >
+                      نعم، حذف جميع البيانات
+                    </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
