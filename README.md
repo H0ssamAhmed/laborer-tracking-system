@@ -1,73 +1,61 @@
-# Welcome to your Lovable project
+# Laborer Tracking System (نظام تتبع العامل)
 
-## Project info
+A simple bilingual (Arabic-first) web application built with **React** and **Supabase** that helps laborers track their workdays, earnings, expenses, and remaining balances.
 
-**URL**: https://lovable.dev/projects/68fc4672-27eb-4ebc-b8af-62eca596c12d
+## 🌟 Features
 
-## How can I edit this code?
+- ✅ Add daily work entries (with automatic or manual date input)
+- ✅ Display **both Gregorian and Hijri** dates
+- ✅ Auto-calculate total earnings based on days worked
+- ✅ Add and manage expenses (advance payments, deductions)
+- ✅ Show current balance (total earnings - total expenses)
+- ✅ "Clear Account" button that archives all current data instead of deleting
+- ✅ Ability to view or restore archived records
+- ✅ Simple, mobile-friendly UI fully in Arabic
 
-There are several ways of editing your application.
+## 📦 Tech Stack
 
-**Use Lovable**
+- **Frontend**: React (with Arabic UI)
+- **Backend & Auth**: Supabase
+- **Date Conversion**: Hijri date conversion using `@ajmedu/hijri-date` or similar libraries
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/68fc4672-27eb-4ebc-b8af-62eca596c12d) and start prompting.
+## 🗃️ Database Structure (Supabase)
 
-Changes made via Lovable will be committed automatically to this repo.
+### Table: `workdays`
 
-**Use your preferred IDE**
+| Field        | Type      | Description                |
+| ------------ | --------- | -------------------------- |
+| `id`         | UUID      | Primary key                |
+| `user_id`    | UUID      | Supabase Auth user ID      |
+| `date`       | Date      | Workday date (Gregorian)   |
+| `archived`   | Boolean   | Marks if entry is archived |
+| `created_at` | Timestamp | Auto timestamp             |
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Table: `expenses`
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+| Field        | Type      | Description                |
+| ------------ | --------- | -------------------------- |
+| `id`         | UUID      | Primary key                |
+| `amount`     | Numeric   | Expense or amount paid     |
+| `note`       | Text      | Description or note        |
+| `date`       | Date      | Date of expense            |
+| `archived`   | Boolean   | Marks if entry is archived |
+| `created_at` | Timestamp | Auto timestamp             |
 
-Follow these steps:
+## 🚀 Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Prerequisites
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- Node.js & npm
+- Supabase account
+- Arabic font support (e.g., Google Fonts)
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Installation
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+git clone https://github.com/H0ssamAhmed/laborer-tracking-system.git
+
+cd laborer-tracking-system
+
+npm install
 ```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/68fc4672-27eb-4ebc-b8af-62eca596c12d) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
