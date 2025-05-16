@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { Workday, formatCurrency } from '../utils/calculations';
+import { Workday, formatCurrency, formatDateWithHijri } from '../utils/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface WorkdaysListProps {
@@ -35,7 +35,7 @@ const WorkdaysList: React.FC<WorkdaysListProps> = ({ workdays, onDeleteWorkday }
                 className="flex items-center justify-between bg-secondary/20 p-3 rounded-md"
               >
                 <div>
-                  <p className="font-medium">{new Date(workday.date).toLocaleDateString('ar-SA')}</p>
+                  <p className="font-medium">{formatDateWithHijri(workday.date)}</p>
                   <p className="text-sm text-muted-foreground">{formatCurrency(workday.dayRate)}</p>
                 </div>
                 <Button 

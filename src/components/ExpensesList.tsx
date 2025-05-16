@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { Expense, formatCurrency } from '../utils/calculations';
+import { Expense, formatCurrency, formatDateWithHijri } from '../utils/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 
@@ -37,7 +37,7 @@ const ExpensesList: React.FC<ExpensesListProps> = ({ expenses, onDeleteExpense }
               >
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-medium">{new Date(expense.date).toLocaleDateString('ar-SA')}</p>
+                    <p className="font-medium">{formatDateWithHijri(expense.date)}</p>
                     <Badge 
                       variant={expense.type === 'expense' ? 'destructive' : 'default'}
                       className={expense.type === 'expense' ? 'bg-red-500' : 'bg-blue-500'}

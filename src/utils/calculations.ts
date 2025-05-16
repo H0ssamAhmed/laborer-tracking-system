@@ -79,7 +79,7 @@ export const getActiveRecords = (workdays: Workday[], expenses: Expense[]): [Wor
 export const getArchivedRecords = (workdays: Workday[], expenses: Expense[]): [Workday[], Expense[]] => {
   return [
     workdays.filter(day => day.archived),
-    expenses.filter(expense => day.archived)
+    expenses.filter(expense => expense.archived)
   ];
 };
 
@@ -94,5 +94,31 @@ export const restoreRecord = (id: string, isWorkday: boolean, workdays: Workday[
       workdays,
       expenses.map(expense => expense.id === id ? { ...expense, archived: false } : expense)
     ];
+  }
+};
+
+// Date formatting functions using the native Intl API instead of date-fns-hijri
+export const formatDateWithHijri = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    
+    // Format Gregorian date (YYYY/MM/DD)
+    const gregorianDate = new Intl.DateTimeFormat('ar-SA-u-nu-latn', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(date).replace(/\//g, '/');
+    
+    // Format Hijri date
+    const hijriDate = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(date);
+    
+    return `${hijriDate} - ${gregorianDate}`;
+  } catch (error) {
+    console.error('Date formatting error:', error);
+    return dateString; // Return original date string if conversion fails
   }
 };

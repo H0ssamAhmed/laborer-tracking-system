@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Workday, Expense, formatCurrency } from '@/utils/calculations';
+import { Workday, Expense, formatCurrency, formatDateWithHijri } from '@/utils/calculations';
 import { ArchiveRestore } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -56,7 +56,7 @@ const ArchivedRecords: React.FC<ArchivedRecordsProps> = ({
                       className="flex items-center justify-between bg-secondary/20 p-3 rounded-md"
                     >
                       <div>
-                        <p className="font-medium">{new Date(workday.date).toLocaleDateString('ar-SA')}</p>
+                        <p className="font-medium">{formatDateWithHijri(workday.date)}</p>
                         <p className="text-sm text-muted-foreground">{formatCurrency(workday.dayRate)}</p>
                       </div>
                       <Button 
@@ -87,7 +87,7 @@ const ArchivedRecords: React.FC<ArchivedRecordsProps> = ({
                     >
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <p className="font-medium">{new Date(expense.date).toLocaleDateString('ar-SA')}</p>
+                          <p className="font-medium">{formatDateWithHijri(expense.date)}</p>
                           <Badge 
                             variant={expense.type === 'expense' ? 'destructive' : 'default'}
                             className={expense.type === 'expense' ? 'bg-red-500' : 'bg-blue-500'}
