@@ -5,124 +5,139 @@ import WorkdayEntry from '@/components/WorkdayEntry';
 import ExpenseEntry from '@/components/ExpenseEntry';
 import WorkdaysList from '@/components/WorkdaysList';
 import ExpensesList from '@/components/ExpensesList';
+import { api } from "../../convex/_generated/api";
 import ArchivedRecords from '@/components/ArchivedRecords';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Archive, Trash2 } from 'lucide-react';
+import { useMutation, useQuery } from 'convex/react';
 
 const Index = () => {
+  const AllExpenses = useQuery(api.expenses.getAllExpenses)
   const [workdays, setWorkdays] = useState<Workday[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [activeTab, setActiveTab] = useState<string>('active');
-  
+  const getAllExpenses = useQuery(api.expenses.getAllExpenses);
+  const getAllDays = useQuery(api.workdays.getAllDays);
+
+
+
   // Load data from localStorage on initial render
   useEffect(() => {
-    const savedWorkdays = localStorage.getItem('workdays');
-    const savedExpenses = localStorage.getItem('expenses');
-    
-    if (savedWorkdays) {
-      setWorkdays(JSON.parse(savedWorkdays));
-    }
-    
-    if (savedExpenses) {
-      setExpenses(JSON.parse(savedExpenses));
-    }
+    // const savedWorkdays = localStorage.getItem('workdays');
+    // const savedExpenses = localStorage.getItem('expenses');
+
+    // if (savedWorkdays) {
+    //   setWorkdays(JSON.parse(savedWorkdays));
+    // }
+
+    // if (savedExpenses) {
+    //   setExpenses(JSON.parse(savedExpenses));
+    // }
   }, []);
-  
+  useEffect(() => {
+    if (getAllExpenses) {
+      setExpenses(getAllExpenses);
+    }
+    if (getAllDays) {
+      setWorkdays(getAllDays);
+    }
+  }, [getAllExpenses, getAllDays])
+
   // Save data to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('workdays', JSON.stringify(workdays));
   }, [workdays]);
-  
+
   useEffect(() => {
     localStorage.setItem('expenses', JSON.stringify(expenses));
   }, [expenses]);
-  
-  const handleAddWorkday = (workday: Workday) => {
-    setWorkdays([...workdays, workday]);
-  };
-  
-  const handleAddExpense = (expense: Expense) => {
-    setExpenses([...expenses, expense]);
-  };
-  
+
+  // const handleAddWorkday = (workday: Workday) => {
+  //   setWorkdays([...workdays, workday]);
+  // };
+
+  // const handleAddExpense = (expense: Expense) => {
+  //   setExpenses([...expenses, expense]);
+  // };
+
   const handleDeleteWorkday = (id: string) => {
     setWorkdays(workdays.filter(day => day.id !== id));
     toast.success('تم حذف يوم العمل بنجاح');
   };
-  
+
   const handleDeleteExpense = (id: string) => {
     setExpenses(expenses.filter(expense => expense.id !== id));
     toast.success('تم حذف العنصر بنجاح');
   };
-  
+
   const handleArchiveAccount = () => {
     const [archivedWorkdays, archivedExpenses] = archiveAllRecords(workdays, expenses);
     setWorkdays(archivedWorkdays);
     setExpenses(archivedExpenses);
     toast.success('تم أرشفة الحساب بنجاح');
   };
-  
+
   const handleRestoreWorkday = (id: string) => {
     setWorkdays(workdays.map(day => day.id === id ? { ...day, archived: false } : day));
     toast.success('تم استعادة يوم العمل بنجاح');
   };
-  
+
   const handleRestoreExpense = (id: string) => {
     setExpenses(expenses.map(expense => expense.id === id ? { ...expense, archived: false } : expense));
     toast.success('تم استعادة العنصر بنجاح');
   };
-  
+
   const handleClearAllData = () => {
     setWorkdays([]);
     setExpenses([]);
     toast.success('تم حذف جميع البيانات بنجاح');
   };
-  
+
   // Filter active and archived records
   const activeWorkdays = workdays.filter(day => !day.archived);
   const activeExpenses = expenses.filter(expense => !expense.archived);
   const archivedWorkdays = workdays.filter(day => day.archived);
   const archivedExpenses = expenses.filter(expense => expense.archived);
-  
+
   const remainingBalance = calculateRemainingBalance(workdays, expenses);
-  
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-primary text-white p-4 shadow-md">
         <h1 className="text-2xl font-bold text-center">نظام متابعة الأجور</h1>
       </header>
-      
+
       <main className="container max-w-md mx-auto p-4 pb-20">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="active">السجلات النشطة</TabsTrigger>
             <TabsTrigger value="archived">الأرشيف</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="active" className="mt-4">
             <DataSummary workdays={activeWorkdays} expenses={activeExpenses} />
-            
+
             <div className="grid gap-6">
-              <WorkdayEntry onAddWorkday={handleAddWorkday} />
-              <ExpenseEntry onAddExpense={handleAddExpense} />
-              
-              <WorkdaysList 
-                workdays={activeWorkdays} 
-                onDeleteWorkday={handleDeleteWorkday} 
+              <WorkdayEntry />
+              <ExpenseEntry />
+
+              <WorkdaysList
+                workdays={activeWorkdays}
+                onDeleteWorkday={handleDeleteWorkday}
               />
-              
-              <ExpensesList 
-                expenses={activeExpenses} 
-                onDeleteExpense={handleDeleteExpense} 
+
+              <ExpensesList
+                expenses={activeExpenses}
+                onDeleteExpense={handleDeleteExpense}
               />
-              
+
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full bg-accent hover:bg-accent/80 text-white font-bold"
                     disabled={activeWorkdays.length === 0 && activeExpenses.length === 0}
                   >
@@ -147,12 +162,12 @@ const Index = () => {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-              
+
               {/* New Clear All Data Button */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="destructive" 
+                  <Button
+                    variant="destructive"
                     className="w-full font-bold"
                     disabled={workdays.length === 0 && expenses.length === 0}
                   >
@@ -169,7 +184,7 @@ const Index = () => {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                    <AlertDialogAction 
+                    <AlertDialogAction
                       onClick={handleClearAllData}
                       className="bg-destructive hover:bg-destructive/90"
                     >
@@ -180,15 +195,15 @@ const Index = () => {
               </AlertDialog>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="archived" className="mt-4">
-            <ArchivedRecords 
-              archivedWorkdays={archivedWorkdays} 
+            <ArchivedRecords
+              archivedWorkdays={archivedWorkdays}
               archivedExpenses={archivedExpenses}
               onRestoreWorkday={handleRestoreWorkday}
               onRestoreExpense={handleRestoreExpense}
             />
-            
+
             {(archivedWorkdays.length === 0 && archivedExpenses.length === 0) && (
               <div className="text-center mt-8 text-muted-foreground">
                 <p>لا توجد سجلات مؤرشفة بعد</p>

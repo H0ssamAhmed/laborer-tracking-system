@@ -1,13 +1,13 @@
 
 export interface Workday {
-  id: string;
+  id?: string;
   date: string;
   dayRate: number;
   archived?: boolean;
 }
 
 export interface Expense {
-  id: string;
+  id?: string;
   date: string;
   amount: number;
   description: string;
@@ -40,7 +40,7 @@ export const calculateRemainingBalance = (
   const totalEarnings = calculateTotalEarnings(workdays);
   const totalExpenses = calculateTotalExpenses(expenses);
   const totalPayments = calculateTotalPayments(expenses);
-  
+
   return totalEarnings - totalExpenses - totalPayments;
 };
 
@@ -65,7 +65,7 @@ export const generateId = (): string => {
 export const archiveAllRecords = (workdays: Workday[], expenses: Expense[]): [Workday[], Expense[]] => {
   const archivedWorkdays = workdays.map(day => ({ ...day, archived: true }));
   const archivedExpenses = expenses.map(expense => ({ ...expense, archived: true }));
-  
+
   return [archivedWorkdays, archivedExpenses];
 };
 
@@ -101,7 +101,7 @@ export const restoreRecord = (id: string, isWorkday: boolean, workdays: Workday[
 export const formatDateWithHijri = (dateString: string): string => {
   try {
     const date = new Date(dateString);
-    
+
     // Format Gregorian date (YYYY/MM/DD)
     const gregorianDate = new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
@@ -109,7 +109,7 @@ export const formatDateWithHijri = (dateString: string): string => {
       day: '2-digit',
       weekday: 'long'
     }).format(date).replace(/\//g, '/');
-    
+
     // Format Hijri date with month name and year
     const hijriDate = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
       day: 'numeric',
@@ -117,7 +117,7 @@ export const formatDateWithHijri = (dateString: string): string => {
       year: 'numeric',
       weekday: 'long'
     }).format(date);
-    
+
     return `${hijriDate} - ${gregorianDate}`;
   } catch (error) {
     console.error('Date formatting error:', error);

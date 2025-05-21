@@ -8,40 +8,45 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { CalendarIcon, Plus } from 'lucide-react';
 import { Expense, getCurrentDate, generateId } from '../utils/calculations';
+import { useMutation } from 'convex/react';
+import { api } from "../../convex/_generated/api";
+
 
 interface ExpenseEntryProps {
   onAddExpense: (expense: Expense) => void;
 }
 
-const ExpenseEntry: React.FC<ExpenseEntryProps> = ({ onAddExpense }) => {
+const ExpenseEntry = () => {
   const [date, setDate] = useState(getCurrentDate());
   const [amount, setAmount] = useState<number>(0);
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'expense' | 'payment'>('expense');
+  const AddExpense = useMutation(api.expenses.addExpense);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!date || amount <= 0) {
       toast.error('يرجى التحقق من التاريخ والمبلغ');
       return;
     }
 
     const newExpense: Expense = {
-      id: generateId(),
+      // id: generateId(),
       date,
       amount,
       description,
       type,
+      archived: false,
     };
+    AddExpense(newExpense);
 
-    onAddExpense(newExpense);
     setDate(getCurrentDate());
     setAmount(0);
     setDescription('');
-    
-    toast.success(type === 'expense' 
-      ? 'تم إضافة المصروف بنجاح' 
+
+    toast.success(type === 'expense'
+      ? 'تم إضافة المصروف بنجاح'
       : 'تم إضافة الدفعة المستلمة بنجاح'
     );
   };
@@ -55,8 +60,8 @@ const ExpenseEntry: React.FC<ExpenseEntryProps> = ({ onAddExpense }) => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <RadioGroup 
-            value={type} 
+          <RadioGroup
+            value={type}
             onValueChange={(value) => setType(value as 'expense' | 'payment')}
             className="flex justify-center space-x-6 space-x-reverse mb-4"
           >
@@ -108,7 +113,7 @@ const ExpenseEntry: React.FC<ExpenseEntryProps> = ({ onAddExpense }) => {
           </div>
 
           <Button type="submit" className="w-full">
-            <Plus className="ml-2 h-4 w-4" /> 
+            <Plus className="ml-2 h-4 w-4" />
             {type === 'expense' ? 'إضافة مصروف' : 'إضافة دفعة مستلمة'}
           </Button>
         </form>

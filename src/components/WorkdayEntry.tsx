@@ -7,30 +7,33 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { CalendarIcon, Plus } from 'lucide-react';
 import { Workday, getCurrentDate, getDefaultDayRate, generateId } from '../utils/calculations';
+import { useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 interface WorkdayEntryProps {
   onAddWorkday: (workday: Workday) => void;
 }
 
-const WorkdayEntry: React.FC<WorkdayEntryProps> = ({ onAddWorkday }) => {
+const WorkdayEntry = () => {
   const [date, setDate] = useState(getCurrentDate());
   const [dayRate, setDayRate] = useState(getDefaultDayRate());
+  const addDay = useMutation(api.workdays.addDay)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!date) {
       toast.error('يرجى إدخال التاريخ');
       return;
     }
 
     const newWorkday: Workday = {
-      id: generateId(),
       date,
       dayRate,
+      archived: false,
     };
+    addDay(newWorkday)
 
-    onAddWorkday(newWorkday);
     setDate(getCurrentDate());
     toast.success('تم إضافة يوم عمل بنجاح');
   };
