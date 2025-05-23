@@ -72,12 +72,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-primary text-white p-4 shadow-md">
-        <h1 className="text-2xl font-bold text-center">نظام متابعة الأجور</h1>
-      </header>
-
       <main className="container max-w-md mx-auto p-4 pb-20">
-        <Tabs dir='rtl' value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6" dir='rtl'>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="active">السجلات النشطة</TabsTrigger>
             <TabsTrigger value="archived">الأرشيف</TabsTrigger>
@@ -105,7 +101,7 @@ const Index = () => {
                 expenses={activeExpenses}
               />
 
-              <AlertDialog>
+              <AlertDialog >
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="outline"
@@ -117,8 +113,8 @@ const Index = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent dir='rtl'>
                   <AlertDialogHeader>
-                    <AlertDialogTitle className='text-start'>هل أنت متأكد من أرشفة الحساب؟</AlertDialogTitle>
-                    <AlertDialogDescription className='text-start'>
+                    <AlertDialogTitle>هل أنت متأكد من أرشفة الحساب؟</AlertDialogTitle>
+                    <AlertDialogDescription>
                       {remainingBalance > 0 ? (
                         <p>أنت على وشك أرشفة جميع البيانات. هناك مبلغ <strong>{remainingBalance.toFixed(2)} ريال</strong> متبقي لم يتم استلامه.</p>
                       ) : (
@@ -147,8 +143,8 @@ const Index = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent dir='rtl'>
                   <AlertDialogHeader>
-                    <AlertDialogTitle className='text-start'>هل أنت متأكد من حذف جميع البيانات؟</AlertDialogTitle>
-                    <AlertDialogDescription className='text-start'>
+                    <AlertDialogTitle>هل أنت متأكد من حذف جميع البيانات؟</AlertDialogTitle>
+                    <AlertDialogDescription>
                       <p>سيتم حذف جميع البيانات بشكل نهائي، بما في ذلك السجلات المؤرشفة.</p>
                       <p className="mt-2 font-bold text-destructive">لا يمكن التراجع عن هذه العملية.</p>
                     </AlertDialogDescription>
