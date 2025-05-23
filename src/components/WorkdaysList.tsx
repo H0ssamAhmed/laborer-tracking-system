@@ -32,8 +32,6 @@ const WorkdaysList: React.FC<WorkdaysListProps> = ({ workdays, setIsLoading }) =
   const sortedWorkdays = [...workdays].sort((a, b) =>
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
-  console.log(workdays);
-
 
   return (
     <Card className="mb-6" >
