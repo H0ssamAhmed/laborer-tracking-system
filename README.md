@@ -1,6 +1,6 @@
 # Laborer Tracking System (نظام تتبع العامل)
 
-A simple bilingual (Arabic-first) web application built with **React** and **Supabase** that helps laborers track their workdays, earnings, expenses, and remaining balances.
+A simple bilingual (Arabic-first) web application built with **React** and **Convex** that helps laborers track their workdays, earnings, expenses, and remaining balances.
 
 ## 🌟 Features
 
@@ -16,38 +16,37 @@ A simple bilingual (Arabic-first) web application built with **React** and **Sup
 ## 📦 Tech Stack
 
 - **Frontend**: React (with Arabic UI)
-- **Backend & Auth**: Supabase
-- **Date Conversion**: Hijri date conversion using `@ajmedu/hijri-date` or similar libraries
+- **Backend**: Convex
+- **Hijri Date Conversion**: `@ajmedu/hijri-date` or similar libraries
 
-## 🗃️ Database Structure (Supabase)
+## 🗃️ Database Structure (Convex)
 
 ### Table: `workdays`
 
-| Field        | Type      | Description                |
-| ------------ | --------- | -------------------------- |
-| `id`         | UUID      | Primary key                |
-| `user_id`    | UUID      | Supabase Auth user ID      |
-| `date`       | Date      | Workday date (Gregorian)   |
-| `archived`   | Boolean   | Marks if entry is archived |
-| `created_at` | Timestamp | Auto timestamp             |
+| Field        | Type      | Description              |
+| ------------ | --------- | ------------------------ |
+| `id`         | String    | Document ID (Convex)     |
+| `date`       | String    | Workday date (Gregorian) |
+| `dayRate`    | Number    | Daily wage               |
+| `_createdAt` | Timestamp | Auto timestamp           |
 
 ### Table: `expenses`
 
-| Field        | Type      | Description                |
-| ------------ | --------- | -------------------------- |
-| `id`         | UUID      | Primary key                |
-| `amount`     | Numeric   | Expense or amount paid     |
-| `note`       | Text      | Description or note        |
-| `date`       | Date      | Date of expense            |
-| `archived`   | Boolean   | Marks if entry is archived |
-| `created_at` | Timestamp | Auto timestamp             |
+| Field         | Type      | Description            |
+| ------------- | --------- | ---------------------- |
+| `id`          | String    | Document ID (Convex)   |
+| `amount`      | Number    | Expense or amount paid |
+| `description` | String    | Description or note    |
+| `date`        | String    | Date of expense        |
+| `type`        | String    | Type (e.g., "expense") |
+| `_createdAt`  | Timestamp | Auto timestamp         |
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
 - Node.js & npm
-- Supabase account
+- Convex account (https://www.convex.dev)
 - Arabic font support (e.g., Google Fonts)
 
 ### Installation
@@ -59,3 +58,18 @@ cd laborer-tracking-system
 
 npm install
 ```
+
+## After Installation is Done
+
+To start the application locally, open **two terminals**:
+
+1. In the **first terminal**, run the React frontend:
+   ```bash
+   npm run dev
+   ```
+2. In the **seoncd terminal**, run the Convex backend:
+   ```bash
+   npm convex dev
+   ```
+
+and Enjo

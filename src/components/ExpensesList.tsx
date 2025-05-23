@@ -6,39 +6,49 @@ import { Trash2 } from 'lucide-react';
 import { Expense, formatCurrency, formatDateWithHijri } from '../utils/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-
+import { useMutation } from 'convex/react';
+import { toast } from 'sonner';
+import { api } from '../../convex/_generated/api';
 interface ExpensesListProps {
   expenses: Expense[];
-  onDeleteExpense: (id: string) => void;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+
 }
 
-const ExpensesList: React.FC<ExpensesListProps> = ({ expenses, onDeleteExpense }) => {
+const ExpensesList: React.FC<ExpensesListProps> = ({ expenses, setIsLoading }) => {
+  const deleteExpense = useMutation(api.expenses.deleteExpense);
   if (expenses.length === 0) {
     return null;
   }
-
+  const handleDeleteExpense = (id: string) => {
+    setIsLoading(true);
+    deleteExpense({ id })
+      .then((res) => toast.success('تم حذف العنصر بنجاح'))
+      .catch((err) => toast.error('حدث خطأ في حذف العنصر'))
+      .finally(() => setIsLoading(false));
+  };
   // Sort expenses by date (most recent first)
-  const sortedExpenses = [...expenses].sort((a, b) => 
+  const sortedExpenses = [...expenses].sort((a, b) =>
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-6" dir='rtl'>
       <CardHeader className="pb-2">
         <CardTitle className="text-center text-xl text-primary">المصروفات والدفعات</CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[200px] pr-4">
+        <ScrollArea dir='rtl' className="h-[300px] pr-4">
           <div className="space-y-2">
             {sortedExpenses.map((expense) => (
-              <div 
-                key={expense.id} 
+              <div
+                key={expense._id}
                 className="flex items-center justify-between bg-secondary/20 p-3 rounded-md"
               >
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <p className="font-medium">{formatDateWithHijri(expense.date)}</p>
-                    <Badge 
+                    <Badge
                       variant={expense.type === 'expense' ? 'destructive' : 'default'}
                       className={expense.type === 'expense' ? 'bg-red-500' : 'bg-blue-500'}
                     >
@@ -54,10 +64,10 @@ const ExpensesList: React.FC<ExpensesListProps> = ({ expenses, onDeleteExpense }
                     </p>
                   )}
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => onDeleteExpense(expense.id)}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDeleteExpense(expense._id)}
                   className="text-red-500 hover:text-red-700 hover:bg-red-100 mr-2"
                 >
                   <Trash2 className="h-4 w-4" />

@@ -26,3 +26,11 @@ export const addDay = mutation({
   },
 });
 
+export const deleteDay = mutation({
+  args: {
+    id: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
+  },
+});

@@ -18,25 +18,12 @@ const Index = () => {
   const AllExpenses = useQuery(api.expenses.getAllExpenses)
   const [workdays, setWorkdays] = useState<Workday[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('active');
   const getAllExpenses = useQuery(api.expenses.getAllExpenses);
   const getAllDays = useQuery(api.workdays.getAllDays);
+  const deleteDay = useMutation(api.workdays.deleteDay);
 
-
-
-  // Load data from localStorage on initial render
-  useEffect(() => {
-    // const savedWorkdays = localStorage.getItem('workdays');
-    // const savedExpenses = localStorage.getItem('expenses');
-
-    // if (savedWorkdays) {
-    //   setWorkdays(JSON.parse(savedWorkdays));
-    // }
-
-    // if (savedExpenses) {
-    //   setExpenses(JSON.parse(savedExpenses));
-    // }
-  }, []);
   useEffect(() => {
     if (getAllExpenses) {
       setExpenses(getAllExpenses);
@@ -46,32 +33,11 @@ const Index = () => {
     }
   }, [getAllExpenses, getAllDays])
 
-  // Save data to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('workdays', JSON.stringify(workdays));
-  }, [workdays]);
 
-  useEffect(() => {
-    localStorage.setItem('expenses', JSON.stringify(expenses));
-  }, [expenses]);
 
-  // const handleAddWorkday = (workday: Workday) => {
-  //   setWorkdays([...workdays, workday]);
-  // };
 
-  // const handleAddExpense = (expense: Expense) => {
-  //   setExpenses([...expenses, expense]);
-  // };
 
-  const handleDeleteWorkday = (id: string) => {
-    setWorkdays(workdays.filter(day => day.id !== id));
-    toast.success('تم حذف يوم العمل بنجاح');
-  };
 
-  const handleDeleteExpense = (id: string) => {
-    setExpenses(expenses.filter(expense => expense.id !== id));
-    toast.success('تم حذف العنصر بنجاح');
-  };
 
   const handleArchiveAccount = () => {
     const [archivedWorkdays, archivedExpenses] = archiveAllRecords(workdays, expenses);
@@ -81,12 +47,12 @@ const Index = () => {
   };
 
   const handleRestoreWorkday = (id: string) => {
-    setWorkdays(workdays.map(day => day.id === id ? { ...day, archived: false } : day));
+    setWorkdays(workdays.map(day => day._id === id ? { ...day, archived: false } : day));
     toast.success('تم استعادة يوم العمل بنجاح');
   };
 
   const handleRestoreExpense = (id: string) => {
-    setExpenses(expenses.map(expense => expense.id === id ? { ...expense, archived: false } : expense));
+    setExpenses(expenses.map(expense => expense._id === id ? { ...expense, archived: false } : expense));
     toast.success('تم استعادة العنصر بنجاح');
   };
 
@@ -111,7 +77,7 @@ const Index = () => {
       </header>
 
       <main className="container max-w-md mx-auto p-4 pb-20">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <Tabs dir='rtl' value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="active">السجلات النشطة</TabsTrigger>
             <TabsTrigger value="archived">الأرشيف</TabsTrigger>
@@ -121,17 +87,22 @@ const Index = () => {
             <DataSummary workdays={activeWorkdays} expenses={activeExpenses} />
 
             <div className="grid gap-6">
-              <WorkdayEntry />
+              <WorkdayEntry
+                setIsLoading={setIsLoading}
+                isLoading={isLoading}
+
+              />
               <ExpenseEntry />
 
               <WorkdaysList
+                setIsLoading={setIsLoading}
                 workdays={activeWorkdays}
-                onDeleteWorkday={handleDeleteWorkday}
               />
 
               <ExpensesList
+                // isLoading={isLoading}
+                setIsLoading={setIsLoading}
                 expenses={activeExpenses}
-                onDeleteExpense={handleDeleteExpense}
               />
 
               <AlertDialog>
@@ -144,10 +115,10 @@ const Index = () => {
                     <Archive className="ml-2 h-4 w-4" /> أرشفة الحساب
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent dir='rtl'>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>هل أنت متأكد من أرشفة الحساب؟</AlertDialogTitle>
-                    <AlertDialogDescription>
+                    <AlertDialogTitle className='text-start'>هل أنت متأكد من أرشفة الحساب؟</AlertDialogTitle>
+                    <AlertDialogDescription className='text-start'>
                       {remainingBalance > 0 ? (
                         <p>أنت على وشك أرشفة جميع البيانات. هناك مبلغ <strong>{remainingBalance.toFixed(2)} ريال</strong> متبقي لم يتم استلامه.</p>
                       ) : (
@@ -156,7 +127,7 @@ const Index = () => {
                       <p className="mt-2">يمكنك استعادة السجلات المؤرشفة لاحقاً.</p>
                     </AlertDialogDescription>
                   </AlertDialogHeader>
-                  <AlertDialogFooter>
+                  <AlertDialogFooter className='gap-x-4'>
                     <AlertDialogCancel>إلغاء</AlertDialogCancel>
                     <AlertDialogAction onClick={handleArchiveAccount}>نعم، أرشفة الحساب</AlertDialogAction>
                   </AlertDialogFooter>
@@ -174,15 +145,15 @@ const Index = () => {
                     <Trash2 className="ml-2 h-4 w-4" /> حذف جميع البيانات
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent dir='rtl'>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>هل أنت متأكد من حذف جميع البيانات؟</AlertDialogTitle>
-                    <AlertDialogDescription>
+                    <AlertDialogTitle className='text-start'>هل أنت متأكد من حذف جميع البيانات؟</AlertDialogTitle>
+                    <AlertDialogDescription className='text-start'>
                       <p>سيتم حذف جميع البيانات بشكل نهائي، بما في ذلك السجلات المؤرشفة.</p>
                       <p className="mt-2 font-bold text-destructive">لا يمكن التراجع عن هذه العملية.</p>
                     </AlertDialogDescription>
                   </AlertDialogHeader>
-                  <AlertDialogFooter>
+                  <AlertDialogFooter className='gap-x-4'>
                     <AlertDialogCancel>إلغاء</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleClearAllData}

@@ -5,16 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { CalendarIcon, Plus } from 'lucide-react';
+import { CalendarIcon, Loader, Plus } from 'lucide-react';
 import { Workday, getCurrentDate, getDefaultDayRate, generateId } from '../utils/calculations';
 import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
 interface WorkdayEntryProps {
-  onAddWorkday: (workday: Workday) => void;
+  isLoading: boolean;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+
 }
 
-const WorkdayEntry = () => {
+const WorkdayEntry = ({ isLoading, setIsLoading }: WorkdayEntryProps) => {
   const [date, setDate] = useState(getCurrentDate());
   const [dayRate, setDayRate] = useState(getDefaultDayRate());
   const addDay = useMutation(api.workdays.addDay)
@@ -26,20 +28,21 @@ const WorkdayEntry = () => {
       toast.error('يرجى إدخال التاريخ');
       return;
     }
-
+    setIsLoading(true);
     const newWorkday: Workday = {
       date,
       dayRate,
       archived: false,
     };
     addDay(newWorkday)
-
+      .then((res) => toast.success('تم إضافة يوم عمل بنجاح'))
+      .catch((err) => toast.error('حدث خطأ في إضافة يوم عمل'))
+      .finally(() => setIsLoading(false));
     setDate(getCurrentDate());
-    toast.success('تم إضافة يوم عمل بنجاح');
   };
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-6" dir='rtl'>
       <CardHeader className="pb-2">
         <CardTitle className="text-center text-xl text-primary">إضافة يوم عمل</CardTitle>
       </CardHeader>
@@ -71,8 +74,11 @@ const WorkdayEntry = () => {
               />
             </div>
           </div>
-          <Button type="submit" className="w-full">
-            <Plus className="ml-2 h-4 w-4" /> إضافة يوم عمل
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading
+              ? <><Loader className='animate-spin' /> جاري  التحميل</>
+              : <><Plus className="ml-2 h-4 w-4" /> إضافة يوم عمل</>
+            }
           </Button>
         </form>
       </CardContent>

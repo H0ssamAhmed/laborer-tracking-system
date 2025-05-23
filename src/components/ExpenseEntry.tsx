@@ -52,7 +52,7 @@ const ExpenseEntry = () => {
   };
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-6" dir='rtl'>
       <CardHeader className="pb-2">
         <CardTitle className="text-center text-xl text-primary">
           إضافة مصروف / دفعة مستلمة
@@ -63,15 +63,15 @@ const ExpenseEntry = () => {
           <RadioGroup
             value={type}
             onValueChange={(value) => setType(value as 'expense' | 'payment')}
-            className="flex justify-center space-x-6 space-x-reverse mb-4"
+            className="flex justify-center space-x-10 mb-4"
           >
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <RadioGroupItem value="expense" id="expense" />
+            <div className="flex items-center space-x-1">
               <Label htmlFor="expense">مصروف</Label>
+              <RadioGroupItem value="expense" id="expense" />
             </div>
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <RadioGroupItem value="payment" id="payment" />
+            <div className="flex items-center space-x-1">
               <Label htmlFor="payment">دفعة مستلمة</Label>
+              <RadioGroupItem value="payment" id="payment" />
             </div>
           </RadioGroup>
 

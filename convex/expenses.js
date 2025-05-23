@@ -29,3 +29,13 @@ export const addExpense = mutation({
     });
   },
 });
+
+
+export const deleteExpense = mutation({
+  args: {
+    id: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
+  },
+});

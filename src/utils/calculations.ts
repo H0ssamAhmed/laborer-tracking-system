@@ -1,13 +1,15 @@
 
 export interface Workday {
-  id?: string;
+  _id?: string;
+  _creationTime?: number;
   date: string;
   dayRate: number;
   archived?: boolean;
-}
 
+}
 export interface Expense {
-  id?: string;
+  _id?: string;
+  _creationTime?: number;
   date: string;
   amount: number;
   description: string;
@@ -86,13 +88,13 @@ export const getArchivedRecords = (workdays: Workday[], expenses: Expense[]): [W
 export const restoreRecord = (id: string, isWorkday: boolean, workdays: Workday[], expenses: Expense[]): [Workday[], Expense[]] => {
   if (isWorkday) {
     return [
-      workdays.map(day => day.id === id ? { ...day, archived: false } : day),
+      workdays.map(day => day._id === id ? { ...day, archived: false } : day),
       expenses
     ];
   } else {
     return [
       workdays,
-      expenses.map(expense => expense.id === id ? { ...expense, archived: false } : expense)
+      expenses.map(expense => expense._id === id ? { ...expense, archived: false } : expense)
     ];
   }
 };
