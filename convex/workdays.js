@@ -34,3 +34,54 @@ export const deleteDay = mutation({
     await ctx.db.delete(args.id);
   },
 });
+
+
+
+
+export const archiveAllDays = mutation({
+  handler: async (ctx) => {
+    // Fetch all workdays (you can add filtering here if needed)
+    const allDays = await ctx.db.query("workdays").collect();
+    // Loop and update each one
+    for (const day of allDays) {
+      // Only update if currently archived
+      if (!day.archived) {
+        await ctx.db.patch(day._id, { archived: true });
+      }
+    }
+  },
+});
+export const unarchiveAllDays = mutation({
+  handler: async (ctx) => {
+    // Fetch all workdays (you can add filtering here if needed)
+    const allDays = await ctx.db.query("workdays").collect();
+
+    // Loop and update each one
+    for (const day of allDays) {
+      // Only update if currently archived
+      if (day.archived) {
+        await ctx.db.patch(day._id, { archived: false });
+      }
+    }
+  },
+});
+
+
+export const archiveSingleDay = mutation({
+  args: {
+    id: v.string(),
+  },
+  handler: async (ctx, args) => {
+    if (!day.archived) {
+      await ctx.db.patch(args.id, { archived: true });
+    }
+  },
+});
+export const unarchiveSingleDay = mutation({
+  args: {
+    id: v.string(),
+  }, handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, { archived: false });
+
+  },
+});
