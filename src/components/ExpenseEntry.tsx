@@ -6,17 +6,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { CalendarIcon, Plus } from 'lucide-react';
+import { CalendarIcon, Loader, Plus } from 'lucide-react';
 import { Expense, getCurrentDate, generateId } from '../utils/calculations';
 import { useMutation } from 'convex/react';
 import { api } from "../../convex/_generated/api";
 
 
 interface ExpenseEntryProps {
-  onAddExpense: (expense: Expense) => void;
+  isLoading: boolean;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const ExpenseEntry = () => {
+const ExpenseEntry = ({ isLoading, setIsLoading }: ExpenseEntryProps) => {
   const [date, setDate] = useState(getCurrentDate());
   const [amount, setAmount] = useState<number>(0);
   const [description, setDescription] = useState('');
@@ -30,6 +31,7 @@ const ExpenseEntry = () => {
       toast.error('يرجى التحقق من التاريخ والمبلغ');
       return;
     }
+    setIsLoading(true);
 
     const newExpense: Expense = {
       // id: generateId(),
@@ -39,16 +41,16 @@ const ExpenseEntry = () => {
       type,
       archived: false,
     };
-    AddExpense(newExpense);
-
+    AddExpense(newExpense)
+      .then((res) => toast.success(type === 'expense' ?
+        'تم إضافة المصروف بنجاح' :
+        'تم إضافة الدفعة المستلمة بنجاح'))
+      .catch((err) => toast.error('حدث خطأ في إضافة يوم عمل'))
+      .finally(() => () => { setIsLoading(false) });
     setDate(getCurrentDate());
     setAmount(0);
     setDescription('');
 
-    toast.success(type === 'expense'
-      ? 'تم إضافة المصروف بنجاح'
-      : 'تم إضافة الدفعة المستلمة بنجاح'
-    );
   };
 
   return (
@@ -112,9 +114,10 @@ const ExpenseEntry = () => {
             />
           </div>
 
-          <Button type="submit" className="w-full">
-            <Plus className="ml-2 h-4 w-4" />
-            {type === 'expense' ? 'إضافة مصروف' : 'إضافة دفعة مستلمة'}
+          <Button disabled={isLoading} type="submit" className="w-full">
+            {isLoading ? <><Loader className='animate-spin' /> جاري  التحميل</> :
+              <><Plus className="ml-2 h-4 w-4" />{type === 'expense' ? 'إضافة مصروف' : 'إضافة دفعة مستلمة'}</>
+            }
           </Button>
         </form>
       </CardContent>

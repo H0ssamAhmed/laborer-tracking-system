@@ -13,16 +13,19 @@ import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Archive, Trash2 } from 'lucide-react';
 import { useMutation, useQuery } from 'convex/react';
+import DataSummarySkeleton from '@/components/DataSummarySkeleton';
 
 const Index = () => {
-  const AllExpenses = useQuery(api.expenses.getAllExpenses)
   const [workdays, setWorkdays] = useState<Workday[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>('active');
   const getAllExpenses = useQuery(api.expenses.getAllExpenses);
   const getAllDays = useQuery(api.workdays.getAllDays);
-  const deleteDay = useMutation(api.workdays.deleteDay);
+  const archiveExpenses = useMutation(api.expenses.archiveAllExpenses)
+  const archiveDays = useMutation(api.workdays.archiveAllDays)
+  const unarchiveASingleDay = useMutation(api.workdays.unarchiveSingleDay)
+  const UnarchiveASingleExpense = useMutation(api.expenses.unarchiveSingleExpense)
 
   useEffect(() => {
     if (getAllExpenses) {
@@ -31,29 +34,35 @@ const Index = () => {
     if (getAllDays) {
       setWorkdays(getAllDays);
     }
+    return () => {
+      setIsLoading(false);
+    }
   }, [getAllExpenses, getAllDays])
 
 
 
-
-
-
-
   const handleArchiveAccount = () => {
-    const [archivedWorkdays, archivedExpenses] = archiveAllRecords(workdays, expenses);
-    setWorkdays(archivedWorkdays);
-    setExpenses(archivedExpenses);
-    toast.success('تم أرشفة الحساب بنجاح');
+    setIsLoading(true);
+    archiveExpenses()
+      .then(() => toast.success('تم ارشفة جميع العناصر بنجاح'))
+      .finally(() => setIsLoading(false));
+
+    archiveDays()
+      .then(() => toast.success('تم ارشفة جميع يوم العمل بنجاح'))
+      .finally(() => setIsLoading(false));
   };
 
   const handleRestoreWorkday = (id: string) => {
-    setWorkdays(workdays.map(day => day._id === id ? { ...day, archived: false } : day));
-    toast.success('تم استعادة يوم العمل بنجاح');
+    console.log(id);
+    unarchiveASingleDay({ id })
+    // setWorkdays(workdays.map(day => day._id === id ? { ...day, archived: false } : day));
+    // toast.success('تم استعادة يوم العمل بنجاح');
   };
 
   const handleRestoreExpense = (id: string) => {
-    setExpenses(expenses.map(expense => expense._id === id ? { ...expense, archived: false } : expense));
-    toast.success('تم استعادة العنصر بنجاح');
+    UnarchiveASingleExpense({ id })
+    // setExpenses(expenses.map(expense => expense._id === id ? { ...expense, archived: false } : expense));
+    // toast.success('تم استعادة العنصر بنجاح');
   };
 
   const handleClearAllData = () => {
@@ -80,15 +89,20 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="active" className="mt-4">
-            <DataSummary workdays={activeWorkdays} expenses={activeExpenses} />
+            {isLoading ? <DataSummarySkeleton /> :
+              <DataSummary workdays={activeWorkdays} expenses={activeExpenses} />
+            }
 
             <div className="grid gap-6">
               <WorkdayEntry
                 setIsLoading={setIsLoading}
                 isLoading={isLoading}
-
               />
-              <ExpenseEntry />
+
+              <ExpenseEntry
+                setIsLoading={setIsLoading}
+                isLoading={isLoading}
+              />
 
               <WorkdaysList
                 setIsLoading={setIsLoading}
@@ -96,7 +110,6 @@ const Index = () => {
               />
 
               <ExpensesList
-                // isLoading={isLoading}
                 setIsLoading={setIsLoading}
                 expenses={activeExpenses}
               />
@@ -113,8 +126,8 @@ const Index = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent dir='rtl'>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>هل أنت متأكد من أرشفة الحساب؟</AlertDialogTitle>
-                    <AlertDialogDescription>
+                    <AlertDialogTitle className='text-start'>هل أنت متأكد من أرشفة الحساب؟</AlertDialogTitle>
+                    <AlertDialogDescription className='text-start'>
                       {remainingBalance > 0 ? (
                         <p>أنت على وشك أرشفة جميع البيانات. هناك مبلغ <strong>{remainingBalance.toFixed(2)} ريال</strong> متبقي لم يتم استلامه.</p>
                       ) : (
@@ -142,9 +155,9 @@ const Index = () => {
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent dir='rtl'>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>هل أنت متأكد من حذف جميع البيانات؟</AlertDialogTitle>
-                    <AlertDialogDescription>
+                  <AlertDialogHeader >
+                    <AlertDialogTitle className='text-start'>هل أنت متأكد من حذف جميع البيانات؟</AlertDialogTitle>
+                    <AlertDialogDescription className='text-start'>
                       <p>سيتم حذف جميع البيانات بشكل نهائي، بما في ذلك السجلات المؤرشفة.</p>
                       <p className="mt-2 font-bold text-destructive">لا يمكن التراجع عن هذه العملية.</p>
                     </AlertDialogDescription>

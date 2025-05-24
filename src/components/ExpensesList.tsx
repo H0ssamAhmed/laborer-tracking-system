@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useMutation } from 'convex/react';
 import { toast } from 'sonner';
 import { api } from '../../convex/_generated/api';
+import { cn } from '@/lib/utils';
 interface ExpensesListProps {
   expenses: Expense[];
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -48,16 +49,18 @@ const ExpensesList: React.FC<ExpensesListProps> = ({ expenses, setIsLoading }) =
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <p className="font-medium">{formatDateWithHijri(expense.date)}</p>
+                  </div>
+                  <div className="flex items-center justify-start py-2 gap-2">
+                    <p className="text-sm font-bold">
+                      {formatCurrency(expense.amount)}
+                    </p>
                     <Badge
                       variant={expense.type === 'expense' ? 'destructive' : 'default'}
-                      className={expense.type === 'expense' ? 'bg-red-500' : 'bg-blue-500'}
+                      className={cn(expense.type === 'expense' ? 'bg-red-500' : 'bg-blue-500')}
                     >
                       {expense.type === 'expense' ? 'مصروف' : 'دفعة مستلمة'}
                     </Badge>
                   </div>
-                  <p className="text-sm font-bold">
-                    {formatCurrency(expense.amount)}
-                  </p>
                   {expense.description && (
                     <p className="text-sm text-muted-foreground truncate max-w-[200px]">
                       {expense.description}

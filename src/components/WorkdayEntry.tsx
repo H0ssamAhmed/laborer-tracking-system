@@ -37,7 +37,7 @@ const WorkdayEntry = ({ isLoading, setIsLoading }: WorkdayEntryProps) => {
     addDay(newWorkday)
       .then((res) => toast.success('تم إضافة يوم عمل بنجاح'))
       .catch((err) => toast.error('حدث خطأ في إضافة يوم عمل'))
-      .finally(() => setIsLoading(false));
+      .finally(() => () => { setIsLoading(false) });
     setDate(getCurrentDate());
   };
 
