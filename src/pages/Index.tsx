@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Archive, Trash2 } from 'lucide-react';
 import { useMutation, useQuery } from 'convex/react';
 import DataSummarySkeleton from '@/components/DataSummarySkeleton';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   const [workdays, setWorkdays] = useState<Workday[]>([]);
@@ -80,8 +81,18 @@ const Index = () => {
   const remainingBalance = calculateRemainingBalance(workdays, expenses);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="container max-w-md mx-auto p-4 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header with Auth Link */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-primary">لوحة التحكم</h1>
+          <Link to="/auth">
+            <Button variant="outline" className="flex items-center gap-2">
+              تسجيل الدخول
+            </Button>
+          </Link>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6" dir='rtl'>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="active">السجلات النشطة</TabsTrigger>
@@ -191,7 +202,7 @@ const Index = () => {
             )}
           </TabsContent>
         </Tabs>
-      </main>
+      </div>
     </div>
   );
 };
