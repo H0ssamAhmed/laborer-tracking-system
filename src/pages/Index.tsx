@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Workday, Expense, calculateRemainingBalance, archiveAllRecords } from '@/utils/calculations';
 import DataSummary from '@/components/DataSummary';
@@ -5,28 +6,45 @@ import WorkdayEntry from '@/components/WorkdayEntry';
 import ExpenseEntry from '@/components/ExpenseEntry';
 import WorkdaysList from '@/components/WorkdaysList';
 import ExpensesList from '@/components/ExpensesList';
-import { api } from "../../convex/_generated/api";
 import ArchivedRecords from '@/components/ArchivedRecords';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Archive, Trash2 } from 'lucide-react';
-import { useMutation, useQuery } from 'convex/react';
 import DataSummarySkeleton from '@/components/DataSummarySkeleton';
 import { Link } from 'react-router-dom';
+
+// Conditional imports for Convex
+let api: any = null;
+let useMutation: any = null;
+let useQuery: any = null;
+
+try {
+  if (import.meta.env.VITE_CONVEX_URL) {
+    const convexImports = await import("../../convex/_generated/api");
+    const convexReactImports = await import('convex/react');
+    api = convexImports.api;
+    useMutation = convexReactImports.useMutation;
+    useQuery = convexReactImports.useQuery;
+  }
+} catch (error) {
+  console.log('Convex not available, using local state');
+}
 
 const Index = () => {
   const [workdays, setWorkdays] = useState<Workday[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('active');
-  const getAllExpenses = useQuery(api.expenses.getAllExpenses);
-  const getAllDays = useQuery(api.workdays.getAllDays);
-  const archiveExpenses = useMutation(api.expenses.archiveAllExpenses)
-  const archiveDays = useMutation(api.workdays.archiveAllDays)
-  const unarchiveASingleDay = useMutation(api.workdays.unarchiveSingleDay)
-  const UnarchiveASingleExpense = useMutation(api.expenses.unarchiveSingleExpense)
+
+  // Conditional Convex hooks
+  const getAllExpenses = api && useQuery ? useQuery(api.expenses.getAllExpenses) : undefined;
+  const getAllDays = api && useQuery ? useQuery(api.workdays.getAllDays) : undefined;
+  const archiveExpenses = api && useMutation ? useMutation(api.expenses.archiveAllExpenses) : undefined;
+  const archiveDays = api && useMutation ? useMutation(api.workdays.archiveAllDays) : undefined;
+  const unarchiveASingleDay = api && useMutation ? useMutation(api.workdays.unarchiveSingleDay) : undefined;
+  const UnarchiveASingleExpense = api && useMutation ? useMutation(api.expenses.unarchiveSingleExpense) : undefined;
 
   useEffect(() => {
     if (getAllExpenses) {
@@ -35,14 +53,14 @@ const Index = () => {
     if (getAllDays) {
       setWorkdays(getAllDays);
     }
-    return () => {
-      setIsLoading(false);
-    }
   }, [getAllExpenses, getAllDays])
 
-
-
   const handleArchiveAccount = () => {
+    if (!archiveExpenses || !archiveDays) {
+      toast.error('الخدمة غير متوفرة حاليا');
+      return;
+    }
+    
     setIsLoading(true);
     archiveExpenses()
       .then(() => toast.success('تم ارشفة جميع العناصر بنجاح'))
@@ -54,16 +72,22 @@ const Index = () => {
   };
 
   const handleRestoreWorkday = (id: string) => {
+    if (!unarchiveASingleDay) {
+      toast.error('الخدمة غير متوفرة حاليا');
+      return;
+    }
+    
     console.log(id);
-    unarchiveASingleDay({ id })
-    // setWorkdays(workdays.map(day => day._id === id ? { ...day, archived: false } : day));
-    // toast.success('تم استعادة يوم العمل بنجاح');
+    unarchiveASingleDay({ id });
   };
 
   const handleRestoreExpense = (id: string) => {
-    UnarchiveASingleExpense({ id })
-    // setExpenses(expenses.map(expense => expense._id === id ? { ...expense, archived: false } : expense));
-    // toast.success('تم استعادة العنصر بنجاح');
+    if (!UnarchiveASingleExpense) {
+      toast.error('الخدمة غير متوفرة حاليا');
+      return;
+    }
+    
+    UnarchiveASingleExpense({ id });
   };
 
   const handleClearAllData = () => {
@@ -154,7 +178,7 @@ const Index = () => {
                 </AlertDialogContent>
               </AlertDialog>
 
-              {/* New Clear All Data Button */}
+              {/* Clear All Data Button */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button

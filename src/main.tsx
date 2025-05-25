@@ -1,12 +1,21 @@
+
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { ConvexProvider, ConvexReactClient } from 'convex/react';
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+
+// Get the Convex URL from environment variables with a fallback
+const convexUrl = import.meta.env.VITE_CONVEX_URL;
+
+// Only initialize Convex if we have a URL
+const convex = convexUrl ? new ConvexReactClient(convexUrl) : null;
 
 createRoot(document.getElementById("root")!).render(
-
-  <ConvexProvider client={convex}>
+  convexUrl ? (
+    <ConvexProvider client={convex!}>
+      <App />
+    </ConvexProvider>
+  ) : (
     <App />
-  </ConvexProvider>
+  )
 );
