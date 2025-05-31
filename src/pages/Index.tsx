@@ -11,21 +11,36 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Archive, Trash2 } from 'lucide-react';
+import { Archive, Trash2, LogOut } from 'lucide-react';
 import { useMutation, useQuery } from 'convex/react';
 import DataSummarySkeleton from '@/components/DataSummarySkeleton';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/auth-context';
+import Spinner from '@/components/Spinner';
 
 const Index = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isLoading: authLoading, isAuthenticated, logout } = useAuth();
   const [workdays, setWorkdays] = useState<Workday[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>('active');
-  const getAllExpenses = useQuery(api.expenses.getAllExpenses);
+
+  const getAllExpenses = useQuery(api.expenses.getAllExpenses, user ? { userId: user.id } : "skip");
   const getAllDays = useQuery(api.workdays.getAllDays);
-  const archiveExpenses = useMutation(api.expenses.archiveAllExpenses)
-  const archiveDays = useMutation(api.workdays.archiveAllDays)
-  const unarchiveASingleDay = useMutation(api.workdays.unarchiveSingleDay)
-  const UnarchiveASingleExpense = useMutation(api.expenses.unarchiveSingleExpense)
+  const archiveExpenses = useMutation(api.expenses.archiveAllExpenses);
+  const archiveDays = useMutation(api.workdays.archiveAllDays);
+  const unarchiveASingleDay = useMutation(api.workdays.unarchiveSingleDay);
+  const UnarchiveASingleExpense = useMutation(api.expenses.unarchiveSingleExpense);
+  const deleteAllExpense = useMutation(api.expenses.deleteAllExpense);
+  const deleteAllDays = useMutation(api.workdays.deleteAllDays);
+
+  useEffect(() => {
+    if (!isAuthenticated && !authLoading) {
+      navigate('/auth');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   useEffect(() => {
     if (getAllExpenses) {
@@ -37,9 +52,16 @@ const Index = () => {
     return () => {
       setIsLoading(false);
     }
-  }, [getAllExpenses, getAllDays])
+  }, [getAllExpenses, getAllDays]);
 
-
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success('تم تسجيل الخروج بنجاح');
+    } catch (error) {
+      toast.error('فشل تسجيل الخروج');
+    }
+  };
 
   const handleArchiveAccount = () => {
     setIsLoading(true);
@@ -53,7 +75,6 @@ const Index = () => {
   };
 
   const handleRestoreWorkday = (id: string) => {
-    console.log(id);
     unarchiveASingleDay({ id })
     // setWorkdays(workdays.map(day => day._id === id ? { ...day, archived: false } : day));
     // toast.success('تم استعادة يوم العمل بنجاح');
@@ -66,9 +87,15 @@ const Index = () => {
   };
 
   const handleClearAllData = () => {
-    setWorkdays([]);
-    setExpenses([]);
-    toast.success('تم حذف جميع البيانات بنجاح');
+    setIsLoading(true);
+    deleteAllDays()
+      .then((res) => toast.success('تم حذف كل ايام العمل بنجاح'))
+      .catch((err) => toast.error('حدث خطأ في حذف كل ايام العمل'))
+      .finally(() => setIsLoading(false));
+
+    deleteAllExpense().then((res) => toast.success('تم حذف كل المصاريف بنجاح'))
+      .catch((err) => toast.error('حدث خطأ في حذف المصاريف'))
+      .finally(() => setIsLoading(false));
   };
 
   // Filter active and archived records
@@ -79,8 +106,25 @@ const Index = () => {
 
   const remainingBalance = calculateRemainingBalance(workdays, expenses);
 
+  if (authLoading) {
+    return <Spinner />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <header className="bg-primary text-white p-4 shadow-md">
+        <div className="container max-w-md mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold">نظام متابعة الأجور</h1>
+          <Button
+            variant="ghost"
+            className="text-white hover:bg-primary/80"
+            onClick={handleLogout}
+          >
+            <LogOut className="ml-2 h-4 w-4" />
+            تسجيل الخروج
+          </Button>
+        </div>
+      </header>
       <main className="container max-w-md mx-auto p-4 pb-20">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6" dir='rtl'>
           <TabsList className="grid w-full grid-cols-2">

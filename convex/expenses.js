@@ -1,10 +1,19 @@
+
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 // Return the last 100 tasks in a given task list.
 export const getAllExpenses = query({
-  handler: async (ctx) => {
-    return await ctx.db.query("expenses").collect();
+  args: {
+    userId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const expenses = await ctx.db
+      .query("expenses")
+      .filter((q) => q.eq(q.field("userId"), args.userId))
+      .collect();
+    console.log(expenses.length)
+    return expenses
   },
 });
 
@@ -67,11 +76,11 @@ export const archiveSingleExpense = mutation({
     id: v.string(),
   },
   handler: async (ctx, args) => {
-    if (!expense.archived) {
-      await ctx.db.patch(args.id, { archived: true });
-    }
+    await ctx.db.patch(args.id, { archived: true });
+
   },
 });
+
 export const unarchiveSingleExpense = mutation({
   args: {
     id: v.string(),
@@ -81,3 +90,12 @@ export const unarchiveSingleExpense = mutation({
 
   },
 });
+
+export const deleteAllExpense = mutation({
+  handler: async (ctx) => {
+    const allExpenses = await ctx.db.query("expenses").collect();
+    for (const expense of allExpenses) {
+      await ctx.db.delete(expense._id);
+    }
+  },
+})

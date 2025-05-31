@@ -2,7 +2,7 @@
 import React, { SetStateAction, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { Archive, Trash2 } from 'lucide-react';
 import { Workday, formatCurrency, formatDateWithHijri } from '../utils/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
@@ -17,6 +17,7 @@ interface WorkdaysListProps {
 const WorkdaysList: React.FC<WorkdaysListProps> = ({ workdays, setIsLoading }) => {
 
   const deleteDay = useMutation(api.workdays.deleteDay);
+  const archiveDay = useMutation(api.workdays.archiveSingleDay);
 
   if (workdays.length === 0) {
     return null;
@@ -33,6 +34,10 @@ const WorkdaysList: React.FC<WorkdaysListProps> = ({ workdays, setIsLoading }) =
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
+  const handleArchieveWorkday = (id: string) => {
+    archiveDay({ id });
+
+  }
   return (
     <Card className="mb-6" >
       <CardHeader className="pb-2">
@@ -53,11 +58,20 @@ const WorkdaysList: React.FC<WorkdaysListProps> = ({ workdays, setIsLoading }) =
                 <Button
                   variant="ghost"
                   size="icon"
+                  onClick={() => handleArchieveWorkday(workday._id)}
+                  className="text-green-600 hover:text-green-800 hover:bg-green-100"
+                >
+                  <Archive className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => handleDeleteWorkday(workday._id)}
                   className="text-red-500 hover:text-red-700 hover:bg-red-100"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
+
               </div>
             ))}
           </div>

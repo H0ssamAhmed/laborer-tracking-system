@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as expenses from "../expenses.js";
+import type * as user from "../user.js";
 import type * as workdays from "../workdays.js";
 
 /**
@@ -26,6 +27,7 @@ import type * as workdays from "../workdays.js";
  */
 declare const fullApi: ApiFromModules<{
   expenses: typeof expenses;
+  user: typeof user;
   workdays: typeof workdays;
 }>;
 export declare const api: FilterApi<

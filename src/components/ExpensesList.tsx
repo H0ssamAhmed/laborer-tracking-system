@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { Archive, Trash2 } from 'lucide-react';
 import { Expense, formatCurrency, formatDateWithHijri } from '../utils/calculations';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ interface ExpensesListProps {
 
 const ExpensesList: React.FC<ExpensesListProps> = ({ expenses, setIsLoading }) => {
   const deleteExpense = useMutation(api.expenses.deleteExpense);
+  const archieveExpense = useMutation(api.expenses.archiveSingleExpense);
   if (expenses.length === 0) {
     return null;
   }
@@ -33,6 +34,9 @@ const ExpensesList: React.FC<ExpensesListProps> = ({ expenses, setIsLoading }) =
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
+  const handleArchieveExpense = (id: string) => {
+    archieveExpense({ id })
+  }
   return (
     <Card className="mb-6" dir='rtl'>
       <CardHeader className="pb-2">
@@ -70,11 +74,20 @@ const ExpensesList: React.FC<ExpensesListProps> = ({ expenses, setIsLoading }) =
                 <Button
                   variant="ghost"
                   size="icon"
+                  onClick={() => handleArchieveExpense(expense._id)}
+                  className="text-green-600 hover:text-green-800 hover:bg-green-100"
+                >
+                  <Archive className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => handleDeleteExpense(expense._id)}
                   className="text-red-500 hover:text-red-700 hover:bg-red-100 mr-2"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
+
               </div>
             ))}
           </div>
