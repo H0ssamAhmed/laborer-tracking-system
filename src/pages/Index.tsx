@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Workday, Expense, calculateRemainingBalance, archiveAllRecords } from '@/utils/calculations';
 import DataSummary from '@/components/DataSummary';
@@ -5,27 +6,50 @@ import WorkdayEntry from '@/components/WorkdayEntry';
 import ExpenseEntry from '@/components/ExpenseEntry';
 import WorkdaysList from '@/components/WorkdaysList';
 import ExpensesList from '@/components/ExpensesList';
-import { api } from "../../convex/_generated/api";
 import ArchivedRecords from '@/components/ArchivedRecords';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+<<<<<<< HEAD
 import { Archive, Trash2, LogOut } from 'lucide-react';
 import { useMutation, useQuery } from 'convex/react';
 import DataSummarySkeleton from '@/components/DataSummarySkeleton';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth-context';
 import Spinner from '@/components/Spinner';
+=======
+import { Archive, Trash2 } from 'lucide-react';
+import DataSummarySkeleton from '@/components/DataSummarySkeleton';
+import { Link } from 'react-router-dom';
+
+// Conditional imports for Convex
+let api: any = null;
+let useMutation: any = null;
+let useQuery: any = null;
+
+try {
+  if (import.meta.env.VITE_CONVEX_URL) {
+    const convexImports = await import("../../convex/_generated/api");
+    const convexReactImports = await import('convex/react');
+    api = convexImports.api;
+    useMutation = convexReactImports.useMutation;
+    useQuery = convexReactImports.useQuery;
+  }
+} catch (error) {
+  console.log('Convex not available, using local state');
+}
+>>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
 
 const Index = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading, isAuthenticated, logout } = useAuth();
   const [workdays, setWorkdays] = useState<Workday[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('active');
 
+<<<<<<< HEAD
   const getAllExpenses = useQuery(api.expenses.getAllExpenses, user ? { userId: user._id } : "skip");
   const getAllDays = useQuery(api.workdays.getAllDays, user ? { userId: user._id } : "skip");
   const archiveExpenses = useMutation(api.expenses.archiveAllExpenses);
@@ -40,6 +64,15 @@ const Index = () => {
       navigate('/auth');
     }
   }, [isAuthenticated, authLoading, navigate]);
+=======
+  // Conditional Convex hooks
+  const getAllExpenses = api && useQuery ? useQuery(api.expenses.getAllExpenses) : undefined;
+  const getAllDays = api && useQuery ? useQuery(api.workdays.getAllDays) : undefined;
+  const archiveExpenses = api && useMutation ? useMutation(api.expenses.archiveAllExpenses) : undefined;
+  const archiveDays = api && useMutation ? useMutation(api.workdays.archiveAllDays) : undefined;
+  const unarchiveASingleDay = api && useMutation ? useMutation(api.workdays.unarchiveSingleDay) : undefined;
+  const UnarchiveASingleExpense = api && useMutation ? useMutation(api.expenses.unarchiveSingleExpense) : undefined;
+>>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
 
   useEffect(() => {
     if (getAllExpenses) {
@@ -48,6 +81,7 @@ const Index = () => {
     if (getAllDays) {
       setWorkdays(getAllDays);
     }
+<<<<<<< HEAD
     return () => {
       setIsLoading(false);
     }
@@ -70,6 +104,16 @@ const Index = () => {
       return;
     }
 
+=======
+  }, [getAllExpenses, getAllDays])
+
+  const handleArchiveAccount = () => {
+    if (!archiveExpenses || !archiveDays) {
+      toast.error('الخدمة غير متوفرة حاليا');
+      return;
+    }
+    
+>>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
     setIsLoading(true);
     try {
       await archiveExpenses({ userId: user._id });
@@ -82,6 +126,7 @@ const Index = () => {
     }
   };
 
+<<<<<<< HEAD
   const handleRestoreWorkday = async (id: string) => {
     if (!user?._id) {
       toast.error('يجب تسجيل الدخول أولاً');
@@ -108,6 +153,25 @@ const Index = () => {
     } catch (error) {
       toast.error('حدث خطأ في استعادة المصروف');
     }
+=======
+  const handleRestoreWorkday = (id: string) => {
+    if (!unarchiveASingleDay) {
+      toast.error('الخدمة غير متوفرة حاليا');
+      return;
+    }
+    
+    console.log(id);
+    unarchiveASingleDay({ id });
+  };
+
+  const handleRestoreExpense = (id: string) => {
+    if (!UnarchiveASingleExpense) {
+      toast.error('الخدمة غير متوفرة حاليا');
+      return;
+    }
+    
+    UnarchiveASingleExpense({ id });
+>>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
   };
 
   const handleClearAllData = async () => {
@@ -145,6 +209,7 @@ const Index = () => {
   }
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-gray-50">
       <header className="bg-primary text-white p-4 shadow-md">
         <div className="container max-w-md mx-auto flex justify-between items-center">
@@ -161,6 +226,20 @@ const Index = () => {
       </header>
       <main className="container max-w-md mx-auto p-4 pb-20">
         <h1 className='text-2xl font-bold text-center my-4'>مرحبا بيك, {user.f_name + " " + user.l_name}</h1>
+=======
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header with Auth Link */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-primary">لوحة التحكم</h1>
+          <Link to="/auth">
+            <Button variant="outline" className="flex items-center gap-2">
+              تسجيل الدخول
+            </Button>
+          </Link>
+        </div>
+
+>>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6" dir='rtl'>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="active">السجلات النشطة</TabsTrigger>
@@ -222,6 +301,10 @@ const Index = () => {
                 </AlertDialogContent>
               </AlertDialog>
 
+<<<<<<< HEAD
+=======
+              {/* Clear All Data Button */}
+>>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -269,7 +352,7 @@ const Index = () => {
             )}
           </TabsContent>
         </Tabs>
-      </main>
+      </div>
     </div>
   );
 };
