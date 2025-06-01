@@ -1,45 +1,91 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { CalendarIcon, Loader, Plus } from 'lucide-react';
-import { Workday, getCurrentDate, getDefaultDayRate, generateId } from '../utils/calculations';
+import { getCurrentDate, getDefaultDayRate } from '../utils/calculations';
 import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { useAuth } from '@/lib/auth-context';
+import { useNavigate } from 'react-router-dom';
+import { ConvexError } from 'convex/values';
 
 interface WorkdayEntryProps {
   isLoading: boolean;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-
 }
 
 const WorkdayEntry = ({ isLoading, setIsLoading }: WorkdayEntryProps) => {
+  const navigate = useNavigate();
   const [date, setDate] = useState(getCurrentDate());
   const [dayRate, setDayRate] = useState(getDefaultDayRate());
-  const addDay = useMutation(api.workdays.addDay)
+  const addDay = useMutation(api.workdays.addDay);
+  const { user, isLoading: authLoading } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!user?._id) {
+      toast.error('يجب تسجيل الدخول أولاً');
+      navigate('/auth');
+      return;
+    }
 
     if (!date) {
       toast.error('يرجى إدخال التاريخ');
       return;
     }
+
     setIsLoading(true);
-    const newWorkday: Workday = {
-      date,
-      dayRate,
-      archived: false,
-    };
-    addDay(newWorkday)
-      .then((res) => toast.success('تم إضافة يوم عمل بنجاح'))
-      .catch((err) => toast.error('حدث خطأ في إضافة يوم عمل'))
-      .finally(() => () => { setIsLoading(false) });
-    setDate(getCurrentDate());
+
+    try {
+      const result = await addDay({
+        userId: user._id,
+        date,
+        dayRate,
+        archived: false,
+      });
+
+      if (result) {
+        toast.success('تم إضافة يوم عمل بنجاح');
+        // Reset form
+        setDate(getCurrentDate());
+        setDayRate(getDefaultDayRate());
+      }
+    } catch (error) {
+      console.error('Error adding workday:', error);
+      if (error instanceof ConvexError) {
+        toast.error(error.data.message);
+      } else {
+        toast.error('حدث خطأ في إضافة يوم عمل');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (authLoading) {
+    return (
+      <Card className="mb-6" dir='rtl'>
+        <CardContent className="flex justify-center items-center h-32">
+          <Loader className="animate-spin" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Card className="mb-6" dir='rtl'>
@@ -70,15 +116,23 @@ const WorkdayEntry = ({ isLoading, setIsLoading }: WorkdayEntryProps) => {
                 value={dayRate}
                 onChange={(e) => setDayRate(Number(e.target.value))}
                 min="0"
+                step="0.01"
                 required
               />
             </div>
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading
-              ? <><Loader className='animate-spin' /> جاري  التحميل</>
-              : <><Plus className="ml-2 h-4 w-4" /> إضافة يوم عمل</>
-            }
+            {isLoading ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                جاري التحميل
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                إضافة يوم عمل
+              </>
+            )}
           </Button>
         </form>
       </CardContent>

@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,10 +6,12 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { CalendarIcon, Loader, Plus } from 'lucide-react';
-import { Expense, getCurrentDate, generateId } from '../utils/calculations';
+import { getCurrentDate } from '../utils/calculations';
 import { useMutation } from 'convex/react';
 import { api } from "../../convex/_generated/api";
-
+import { useAuth } from '@/lib/auth-context';
+import { useNavigate } from 'react-router-dom';
+import { ConvexError } from 'convex/values';
 
 interface ExpenseEntryProps {
   isLoading: boolean;
@@ -18,40 +19,79 @@ interface ExpenseEntryProps {
 }
 
 const ExpenseEntry = ({ isLoading, setIsLoading }: ExpenseEntryProps) => {
+  const navigate = useNavigate();
   const [date, setDate] = useState(getCurrentDate());
   const [amount, setAmount] = useState<number>(0);
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'expense' | 'payment'>('expense');
-  const AddExpense = useMutation(api.expenses.addExpense);
+  const addExpense = useMutation(api.expenses.addExpense);
+  const { user, isLoading: authLoading } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!user?._id) {
+      toast.error('يجب تسجيل الدخول أولاً');
+      navigate('/auth');
+      return;
+    }
 
     if (!date || amount <= 0) {
       toast.error('يرجى التحقق من التاريخ والمبلغ');
       return;
     }
+
     setIsLoading(true);
 
-    const newExpense: Expense = {
-      // id: generateId(),
-      date,
-      amount,
-      description,
-      type,
-      archived: false,
-    };
-    AddExpense(newExpense)
-      .then((res) => toast.success(type === 'expense' ?
-        'تم إضافة المصروف بنجاح' :
-        'تم إضافة الدفعة المستلمة بنجاح'))
-      .catch((err) => toast.error('حدث خطأ في إضافة يوم عمل'))
-      .finally(() => () => { setIsLoading(false) });
-    setDate(getCurrentDate());
-    setAmount(0);
-    setDescription('');
+    try {
+      const result = await addExpense({
+        userId: user._id,
+        date,
+        amount,
+        description: description || "",
+        type,
+        archived: false,
+      });
 
+      if (result) {
+        toast.success(type === 'expense' ? 'تم إضافة المصروف بنجاح' : 'تم إضافة الدفعة المستلمة بنجاح');
+        // Reset form
+        setDate(getCurrentDate());
+        setAmount(0);
+        setDescription('');
+      }
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      if (error instanceof ConvexError) {
+        toast.error(error.data.message);
+      } else {
+        toast.error('حدث خطأ في إضافة المصروف');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (authLoading) {
+    return (
+      <Card className="mb-6" dir='rtl'>
+        <CardContent className="flex justify-center items-center h-32">
+          <Loader className="animate-spin" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Card className="mb-6" dir='rtl'>
@@ -99,6 +139,7 @@ const ExpenseEntry = ({ isLoading, setIsLoading }: ExpenseEntryProps) => {
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
                 min="0"
+                step="0.01"
                 required
               />
             </div>
@@ -115,9 +156,17 @@ const ExpenseEntry = ({ isLoading, setIsLoading }: ExpenseEntryProps) => {
           </div>
 
           <Button disabled={isLoading} type="submit" className="w-full">
-            {isLoading ? <><Loader className='animate-spin' /> جاري  التحميل</> :
-              <><Plus className="ml-2 h-4 w-4" />{type === 'expense' ? 'إضافة مصروف' : 'إضافة دفعة مستلمة'}</>
-            }
+            {isLoading ? (
+              <>
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                جاري التحميل
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                {type === 'expense' ? 'إضافة مصروف' : 'إضافة دفعة مستلمة'}
+              </>
+            )}
           </Button>
         </form>
       </CardContent>

@@ -19,7 +19,6 @@ import { useAuth } from '@/lib/auth-context';
 import Spinner from '@/components/Spinner';
 
 const Index = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const { user, isLoading: authLoading, isAuthenticated, logout } = useAuth();
   const [workdays, setWorkdays] = useState<Workday[]>([]);
@@ -27,8 +26,8 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>('active');
 
-  const getAllExpenses = useQuery(api.expenses.getAllExpenses, user ? { userId: user.id } : "skip");
-  const getAllDays = useQuery(api.workdays.getAllDays);
+  const getAllExpenses = useQuery(api.expenses.getAllExpenses, user ? { userId: user._id } : "skip");
+  const getAllDays = useQuery(api.workdays.getAllDays, user ? { userId: user._id } : "skip");
   const archiveExpenses = useMutation(api.expenses.archiveAllExpenses);
   const archiveDays = useMutation(api.workdays.archiveAllDays);
   const unarchiveASingleDay = useMutation(api.workdays.unarchiveSingleDay);
@@ -52,7 +51,9 @@ const Index = () => {
     return () => {
       setIsLoading(false);
     }
+
   }, [getAllExpenses, getAllDays]);
+
 
   const handleLogout = async () => {
     try {
@@ -63,39 +64,68 @@ const Index = () => {
     }
   };
 
-  const handleArchiveAccount = () => {
+  const handleArchiveAccount = async () => {
+    if (!user?._id) {
+      toast.error('يجب تسجيل الدخول أولاً');
+      return;
+    }
+
     setIsLoading(true);
-    archiveExpenses()
-      .then(() => toast.success('تم ارشفة جميع العناصر بنجاح'))
-      .finally(() => setIsLoading(false));
-
-    archiveDays()
-      .then(() => toast.success('تم ارشفة جميع يوم العمل بنجاح'))
-      .finally(() => setIsLoading(false));
+    try {
+      await archiveExpenses({ userId: user._id });
+      await archiveDays({ userId: user._id });
+      toast.success('تم ارشفة جميع السجلات بنجاح');
+    } catch (error) {
+      toast.error('حدث خطأ في أرشفة السجلات');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRestoreWorkday = (id: string) => {
-    unarchiveASingleDay({ id })
-    // setWorkdays(workdays.map(day => day._id === id ? { ...day, archived: false } : day));
-    // toast.success('تم استعادة يوم العمل بنجاح');
+  const handleRestoreWorkday = async (id: string) => {
+    if (!user?._id) {
+      toast.error('يجب تسجيل الدخول أولاً');
+      return;
+    }
+
+    try {
+      await unarchiveASingleDay({ id, userId: user._id });
+      toast.success('تم استعادة يوم العمل بنجاح');
+    } catch (error) {
+      toast.error('حدث خطأ في استعادة يوم العمل');
+    }
   };
 
-  const handleRestoreExpense = (id: string) => {
-    UnarchiveASingleExpense({ id })
-    // setExpenses(expenses.map(expense => expense._id === id ? { ...expense, archived: false } : expense));
-    // toast.success('تم استعادة العنصر بنجاح');
+  const handleRestoreExpense = async (id: string) => {
+    if (!user?._id) {
+      toast.error('يجب تسجيل الدخول أولاً');
+      return;
+    }
+
+    try {
+      await UnarchiveASingleExpense({ id });
+      toast.success('تم استعادة المصروف بنجاح');
+    } catch (error) {
+      toast.error('حدث خطأ في استعادة المصروف');
+    }
   };
 
-  const handleClearAllData = () => {
+  const handleClearAllData = async () => {
+    if (!user?._id) {
+      toast.error('يجب تسجيل الدخول أولاً');
+      return;
+    }
+
     setIsLoading(true);
-    deleteAllDays()
-      .then((res) => toast.success('تم حذف كل ايام العمل بنجاح'))
-      .catch((err) => toast.error('حدث خطأ في حذف كل ايام العمل'))
-      .finally(() => setIsLoading(false));
-
-    deleteAllExpense().then((res) => toast.success('تم حذف كل المصاريف بنجاح'))
-      .catch((err) => toast.error('حدث خطأ في حذف المصاريف'))
-      .finally(() => setIsLoading(false));
+    try {
+      await deleteAllDays({ userId: user._id });
+      await deleteAllExpense({ userId: user._id });
+      toast.success('تم حذف جميع البيانات بنجاح');
+    } catch (error) {
+      toast.error('حدث خطأ في حذف البيانات');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Filter active and archived records
@@ -103,11 +133,15 @@ const Index = () => {
   const activeExpenses = expenses.filter(expense => !expense.archived);
   const archivedWorkdays = workdays.filter(day => day.archived);
   const archivedExpenses = expenses.filter(expense => expense.archived);
-
   const remainingBalance = calculateRemainingBalance(workdays, expenses);
 
+
   if (authLoading) {
-    return <Spinner />;
+    return <div className='flex items-center justify-center h-screen'><Spinner /></div>;
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (
@@ -120,12 +154,13 @@ const Index = () => {
             className="text-white hover:bg-primary/80"
             onClick={handleLogout}
           >
-            <LogOut className="ml-2 h-4 w-4" />
             تسجيل الخروج
+            <LogOut className="ml-2 rotate-180 h-4 w-4" />
           </Button>
         </div>
       </header>
       <main className="container max-w-md mx-auto p-4 pb-20">
+        <h1 className='text-2xl font-bold text-center my-4'>مرحبا بيك, {user.f_name + " " + user.l_name}</h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6" dir='rtl'>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="active">السجلات النشطة</TabsTrigger>
@@ -158,7 +193,7 @@ const Index = () => {
                 expenses={activeExpenses}
               />
 
-              <AlertDialog >
+              <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="outline"
@@ -187,7 +222,6 @@ const Index = () => {
                 </AlertDialogContent>
               </AlertDialog>
 
-              {/* New Clear All Data Button */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -199,7 +233,7 @@ const Index = () => {
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent dir='rtl'>
-                  <AlertDialogHeader >
+                  <AlertDialogHeader>
                     <AlertDialogTitle className='text-start'>هل أنت متأكد من حذف جميع البيانات؟</AlertDialogTitle>
                     <AlertDialogDescription className='text-start'>
                       <p>سيتم حذف جميع البيانات بشكل نهائي، بما في ذلك السجلات المؤرشفة.</p>

@@ -3,7 +3,7 @@ import { v } from "convex/values";
 
 export default defineSchema({
   expenses: defineTable({
-    userId: v.optional(v.string()),
+    userId: v.id("user"),
     date: v.string(),
     amount: v.number(),
     description: v.optional(v.string()),
@@ -11,7 +11,7 @@ export default defineSchema({
     archived: v.boolean(),
   }),
   workdays: defineTable({
-    userId: v.string(),
+    userId: v.id("user"),
     date: v.string(),
     dayRate: v.number(),
     archived: v.boolean(),

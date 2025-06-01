@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { api } from "../../convex/_generated/api";
 import { toast } from 'sonner';
 import { Loader } from 'lucide-react';
 import bcrypt from 'bcryptjs';
+import { ConvexError } from 'convex/values';
 
 export interface User {
   _id?: string;
@@ -65,38 +66,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (usecode: string, password: string) => {
     setIsLoading(true);
-    // console.log(usecode, password);
-
-    // const decoder = new TextDecoder();
-    // const storedHash = decoder.decode(new Uint8Array(password));
-
-    // const isCorrect = bcrypt.compareSync(password, storedHash);
-    // console.log(isCorrect);
-
     try {
       const response = await signInUser({ usecode, password });
       if (response) {
-        console.log(response);
-
-        // const userData = { ...response };
-        // localStorage.setItem('user_data', JSON.stringify(userData));
-        // setUser(userData);
-        // toast.success('تم تسجيل الدخول بنجاح', {
-        //   description: <p className='flex items-center justify-start gap-4'>جاري تحويلك للصفحة الرئيسية <Loader className='animate-spin mx-auto' /></p>,
-        //   icon: '🚀',
-        //   style: { color: "green" },
-        //   duration: 1000
-        // });
-        // navigate('/dashboard');
+        const userData = { ...response };
+        localStorage.setItem('user_data', JSON.stringify(userData));
+        setUser(userData);
+        toast.success('تم تسجيل الدخول بنجاح', {
+          description: <p className='flex items-center justify-start gap-4'>جاري تحويلك للصفحة الرئيسية <Loader className='animate-spin mx-auto' /></p>,
+          icon: '🚀',
+          style: { color: "green" },
+          duration: 1000
+        });
+        navigate('/dashboard');
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'حدث خطأ أثناء تسجيل الدخول';
-      toast.error(errorMessage, { style: { color: "red" } });
+
+
+      const errorMessage = error && 'حدث خطأ أثناء تسجيل الدخول ';
+      toast.error(errorMessage, {
+        description: <p className='flex items-center justify-start gap-4'>تأكد من صحة البيانات المدخلة</p>,
+        style: { color: "red" }
+      });
       throw error;
     } finally {
       setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const signup = async (f_name: string, l_name: string, usecode: string, password: string) => {
@@ -124,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       navigate('/dashboard');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'حدث خطأ أثناء إنشاء الحساب';
+      const errorMessage = error && 'حدث خطأ أثناء إنشاء الحساب';
       toast.error(errorMessage, { style: { color: "red" } });
       throw error;
     } finally {

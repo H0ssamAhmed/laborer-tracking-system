@@ -5,6 +5,7 @@ export interface Workday {
   date: string;
   dayRate: number;
   archived?: boolean;
+  userId: string;
 
 }
 export interface Expense {
@@ -15,6 +16,8 @@ export interface Expense {
   description: string;
   type: 'expense' | 'payment';
   archived?: boolean;
+  userId: string;
+
 }
 
 export const calculateTotalEarnings = (workdays: Workday[]): number => {
