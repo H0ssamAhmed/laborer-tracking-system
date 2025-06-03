@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from "re
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
+
 
 const queryClient = new QueryClient();
 
@@ -19,15 +19,10 @@ const App = () => {
       <TooltipProvider>
         {/* <Toaster /> */}
         <Sonner position="top-center" duration={5000} />
-
         <Routes>
           <Route path="/" element={<Index />} />
-<<<<<<< HEAD
           <Route path="/dashboard" element={<Index />} />
-=======
->>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
           <Route path="/auth" element={<Auth />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>

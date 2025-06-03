@@ -136,11 +136,9 @@ const Index = () => {
         {/* Header with Auth Link */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-primary">لوحة التحكم</h1>
-          <Link to="/auth">
-            <Button variant="outline" className="flex items-center gap-2">
-              تسجيل الدخول
-            </Button>
-          </Link>
+          <Button onClick={logout} variant='outline' className="flex items-center gap-2 hover:bg-red-500">
+            تسجيل الخروج
+          </Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6" dir='rtl'>
