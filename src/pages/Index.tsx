@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Workday, Expense, calculateRemainingBalance, archiveAllRecords } from '@/utils/calculations';
 import DataSummary from '@/components/DataSummary';
@@ -11,35 +10,13 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-<<<<<<< HEAD
-import { Archive, Trash2, LogOut } from 'lucide-react';
-import { useMutation, useQuery } from 'convex/react';
-import DataSummarySkeleton from '@/components/DataSummarySkeleton';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/lib/auth-context';
-import Spinner from '@/components/Spinner';
-=======
 import { Archive, Trash2 } from 'lucide-react';
 import DataSummarySkeleton from '@/components/DataSummarySkeleton';
-import { Link } from 'react-router-dom';
-
-// Conditional imports for Convex
-let api: any = null;
-let useMutation: any = null;
-let useQuery: any = null;
-
-try {
-  if (import.meta.env.VITE_CONVEX_URL) {
-    const convexImports = await import("../../convex/_generated/api");
-    const convexReactImports = await import('convex/react');
-    api = convexImports.api;
-    useMutation = convexReactImports.useMutation;
-    useQuery = convexReactImports.useQuery;
-  }
-} catch (error) {
-  console.log('Convex not available, using local state');
-}
->>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/auth-context';
+import Spinner from '@/components/Spinner';
+import { api } from '../../convex/_generated/api';
+import { useMutation, useQuery } from 'convex/react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -49,7 +26,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('active');
 
-<<<<<<< HEAD
+  // Convex hooks
   const getAllExpenses = useQuery(api.expenses.getAllExpenses, user ? { userId: user._id } : "skip");
   const getAllDays = useQuery(api.workdays.getAllDays, user ? { userId: user._id } : "skip");
   const archiveExpenses = useMutation(api.expenses.archiveAllExpenses);
@@ -64,15 +41,6 @@ const Index = () => {
       navigate('/auth');
     }
   }, [isAuthenticated, authLoading, navigate]);
-=======
-  // Conditional Convex hooks
-  const getAllExpenses = api && useQuery ? useQuery(api.expenses.getAllExpenses) : undefined;
-  const getAllDays = api && useQuery ? useQuery(api.workdays.getAllDays) : undefined;
-  const archiveExpenses = api && useMutation ? useMutation(api.expenses.archiveAllExpenses) : undefined;
-  const archiveDays = api && useMutation ? useMutation(api.workdays.archiveAllDays) : undefined;
-  const unarchiveASingleDay = api && useMutation ? useMutation(api.workdays.unarchiveSingleDay) : undefined;
-  const UnarchiveASingleExpense = api && useMutation ? useMutation(api.expenses.unarchiveSingleExpense) : undefined;
->>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
 
   useEffect(() => {
     if (getAllExpenses) {
@@ -81,22 +49,7 @@ const Index = () => {
     if (getAllDays) {
       setWorkdays(getAllDays);
     }
-<<<<<<< HEAD
-    return () => {
-      setIsLoading(false);
-    }
-
   }, [getAllExpenses, getAllDays]);
-
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      toast.success('تم تسجيل الخروج بنجاح');
-    } catch (error) {
-      toast.error('فشل تسجيل الخروج');
-    }
-  };
 
   const handleArchiveAccount = async () => {
     if (!user?._id) {
@@ -104,16 +57,6 @@ const Index = () => {
       return;
     }
 
-=======
-  }, [getAllExpenses, getAllDays])
-
-  const handleArchiveAccount = () => {
-    if (!archiveExpenses || !archiveDays) {
-      toast.error('الخدمة غير متوفرة حاليا');
-      return;
-    }
-    
->>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
     setIsLoading(true);
     try {
       await archiveExpenses({ userId: user._id });
@@ -126,7 +69,6 @@ const Index = () => {
     }
   };
 
-<<<<<<< HEAD
   const handleRestoreWorkday = async (id: string) => {
     if (!user?._id) {
       toast.error('يجب تسجيل الدخول أولاً');
@@ -148,30 +90,11 @@ const Index = () => {
     }
 
     try {
-      await UnarchiveASingleExpense({ id });
+      await UnarchiveASingleExpense({ id, userId: user._id });
       toast.success('تم استعادة المصروف بنجاح');
     } catch (error) {
       toast.error('حدث خطأ في استعادة المصروف');
     }
-=======
-  const handleRestoreWorkday = (id: string) => {
-    if (!unarchiveASingleDay) {
-      toast.error('الخدمة غير متوفرة حاليا');
-      return;
-    }
-    
-    console.log(id);
-    unarchiveASingleDay({ id });
-  };
-
-  const handleRestoreExpense = (id: string) => {
-    if (!UnarchiveASingleExpense) {
-      toast.error('الخدمة غير متوفرة حاليا');
-      return;
-    }
-    
-    UnarchiveASingleExpense({ id });
->>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
   };
 
   const handleClearAllData = async () => {
@@ -199,7 +122,6 @@ const Index = () => {
   const archivedExpenses = expenses.filter(expense => expense.archived);
   const remainingBalance = calculateRemainingBalance(workdays, expenses);
 
-
   if (authLoading) {
     return <div className='flex items-center justify-center h-screen'><Spinner /></div>;
   }
@@ -209,24 +131,6 @@ const Index = () => {
   }
 
   return (
-<<<<<<< HEAD
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-primary text-white p-4 shadow-md">
-        <div className="container max-w-md mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold">نظام متابعة الأجور</h1>
-          <Button
-            variant="ghost"
-            className="text-white hover:bg-primary/80"
-            onClick={handleLogout}
-          >
-            تسجيل الخروج
-            <LogOut className="ml-2 rotate-180 h-4 w-4" />
-          </Button>
-        </div>
-      </header>
-      <main className="container max-w-md mx-auto p-4 pb-20">
-        <h1 className='text-2xl font-bold text-center my-4'>مرحبا بيك, {user.f_name + " " + user.l_name}</h1>
-=======
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5 p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header with Auth Link */}
@@ -239,7 +143,6 @@ const Index = () => {
           </Link>
         </div>
 
->>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6" dir='rtl'>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="active">السجلات النشطة</TabsTrigger>
@@ -301,10 +204,7 @@ const Index = () => {
                 </AlertDialogContent>
               </AlertDialog>
 
-<<<<<<< HEAD
-=======
               {/* Clear All Data Button */}
->>>>>>> 604063ccf6c83e0ab703062c919cbe8ffdbf4ca8
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
