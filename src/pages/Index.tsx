@@ -17,6 +17,7 @@ import { useAuth } from '@/lib/auth-context';
 import Spinner from '@/components/Spinner';
 import { api } from '../../convex/_generated/api';
 import { useMutation, useQuery } from 'convex/react';
+import { Toast } from '@radix-ui/react-toast';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -38,6 +39,9 @@ const Index = () => {
 
   useEffect(() => {
     if (!isAuthenticated && !authLoading) {
+      toast.error('يجب تسجيل الدخول أولاً', {
+        style: { color: "red" },
+      });
       navigate('/auth');
     }
   }, [isAuthenticated, authLoading, navigate]);

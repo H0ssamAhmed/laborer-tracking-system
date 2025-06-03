@@ -50,6 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (userData) {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
+        toast.success('تم تسجيل الدخول بنجاح', {
+          description: <p className='flex items-center justify-start gap-4'>جاري تحويلك للصفحة الرئيسية <Loader className='animate-spin mx-auto' /></p>,
+          icon: '🚀',
+          style: { color: "green" },
+        });
       }
     } catch (error) {
       console.error('Auth validation failed:', error);
