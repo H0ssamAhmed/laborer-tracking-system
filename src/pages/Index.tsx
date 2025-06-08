@@ -39,9 +39,9 @@ const Index = () => {
 
   useEffect(() => {
     if (!isAuthenticated && !authLoading) {
-      toast.error('يجب تسجيل الدخول أولاً', {
-        style: { color: "red" },
-      });
+      // toast.error('يجب تسجيل الدخول أولاً', {
+      //   style: { color: "red" },
+      // });
       navigate('/auth');
     }
   }, [isAuthenticated, authLoading, navigate]);
@@ -88,13 +88,14 @@ const Index = () => {
   };
 
   const handleRestoreExpense = async (id: string) => {
+
     if (!user?._id) {
       toast.error('يجب تسجيل الدخول أولاً');
       return;
     }
 
     try {
-      await UnarchiveASingleExpense({ id, userId: user._id });
+      await UnarchiveASingleExpense({ id });
       toast.success('تم استعادة المصروف بنجاح');
     } catch (error) {
       toast.error('حدث خطأ في استعادة المصروف');

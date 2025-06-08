@@ -1,11 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from 'convex/react';
+import { useMutation } from 'convex/react';
 import { api } from "../../convex/_generated/api";
 import { toast } from 'sonner';
-import { Loader } from 'lucide-react';
-import bcrypt from 'bcryptjs';
-import { ConvexError } from 'convex/values';
 
 export interface User {
   _id?: string;
@@ -51,11 +48,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
         toast.success('تم تسجيل الدخول بنجاح', {
-          description: <p className='flex items-center justify-start gap-4'>جاري تحويلك للصفحة الرئيسية <Loader className='animate-spin mx-auto' /></p>,
           icon: '🚀',
           style: { color: "green" },
         });
       }
+      navigate('/dashboard');
     } catch (error) {
       console.error('Auth validation failed:', error);
       localStorage.removeItem('user_data');
@@ -73,21 +70,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const response = await signInUser({ usecode, password });
-      if (response) {
-        const userData = { ...response };
+      if (response.ok) {
+        const userData = response.user as User;
         localStorage.setItem('user_data', JSON.stringify(userData));
         setUser(userData);
         toast.success('تم تسجيل الدخول بنجاح', {
-          description: <p className='flex items-center justify-start gap-4'>جاري تحويلك للصفحة الرئيسية <Loader className='animate-spin mx-auto' /></p>,
           icon: '🚀',
           style: { color: "green" },
           duration: 1000
         });
         navigate('/dashboard');
+        return
+      }
+
+      if (!response.ok) {
+        toast.error(response.message, {
+          icon: "❌",
+          style: { color: "red" },
+          duration: 4000
+        });
       }
     } catch (error) {
-
-
       const errorMessage = error && 'حدث خطأ أثناء تسجيل الدخول ';
       toast.error(errorMessage, {
         description: <p className='flex items-center justify-start gap-4'>تأكد من صحة البيانات المدخلة</p>,
@@ -104,19 +107,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await signUpUser({ f_name, l_name, usecode, password });
 
-      if ('message' in response && response.message === "user already exists") {
-        toast.error("اسم او كود المستخدم موجود بالفعل", {
-          style: { color: "red" }
+      if (!response.ok) {
+        toast.error(response.message, {
+          icon: "❌",
+          style: { color: "red" },
+          duration: 4000
         });
         return;
       }
 
-      const userData = response as User;
+      const userData = response.user as User;
       localStorage.setItem('user_data', JSON.stringify(userData));
       setUser(userData);
 
       toast.success('تم إنشاء الحساب بنجاح', {
-        description: <p className='flex items-center justify-start gap-4'>جاري تحويلك للصفحة الرئيسية <Loader className='animate-spin mx-auto' /></p>,
         icon: '🚀',
         style: { color: "green" },
         duration: 1000
@@ -137,6 +141,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.removeItem('user_data');
       setUser(null);
+      toast.success('تم تسجيل الخروج بنجاح', {
+        icon: '🚀',
+        style: { color: "green" },
+        duration: 1000
+      })
       navigate('/auth');
     } catch (error) {
       console.error('Logout failed:', error);

@@ -72,4 +72,6 @@ To start the application locally, open **two terminals**:
    npm convex dev
    ```
 
-and Enjo
+#
+
+Now open your browser on `http://localhost:8080` and enjoy

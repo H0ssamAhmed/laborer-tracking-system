@@ -1,35 +1,12 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SignIn from '@/components/SignIn';
 import SignUp from '@/components/SignUp';
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<string>('signin');
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Authentication logic would go here
-    console.log('Form submitted:', formData);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center p-4">
@@ -44,9 +21,12 @@ const Auth = () => {
 
         <Card className="shadow-lg">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">
-              الدخول والتسجيل
-            </CardTitle>
+            {activeTab === 'signin' ? <CardTitle className="text-2xl text-center">
+              تسجيل الدخول
+            </CardTitle> :
+              <CardTitle className="text-2xl text-center">
+                انشاء حساب
+              </CardTitle>}
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} dir='rtl'>
@@ -64,14 +44,6 @@ const Auth = () => {
               </TabsContent>
             </Tabs>
 
-            {/* Back to Home */}
-            <div className="text-center mt-6">
-              <Link to="/">
-                <Button variant="ghost" size="sm">
-                  العودة للصفحة الرئيسية
-                </Button>
-              </Link>
-            </div>
           </CardContent>
         </Card>
 

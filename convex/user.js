@@ -1,6 +1,5 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import bcrypt from "bcryptjs";
 
 // Helper function to validate user session
 const validateUserSession = async (ctx, userId) => {
@@ -26,14 +25,14 @@ export const signIn = mutation({
       .withIndex("by_usecode", (q) => q.eq("usecode", args.usecode))
       .first();
 
-    // Check if user exists
-    if (!user) {
-      throw new ConvexError({ message: "المستخدم غير موجود" });
+    const CheckUserCredentials = user && user.password === args.password;
+    if (!CheckUserCredentials) {
+      return ({ ok: false, message: "اسم المستخدم او كلمة المرور خطاء" });
     }
 
     // Return user data without password
     const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return { user: userWithoutPassword, ok: true };
   },
 });
 
@@ -53,8 +52,8 @@ export const signUp = mutation({
 
     if (existingUser) {
       return {
-        message: "user already exists",
-        existingUser: { name: `${existingUser.f_name} ${existingUser.l_name}` }
+        message: "اسم المستخدم موجود بالفعل",
+        ok: false,
       };
     }
 
@@ -68,7 +67,7 @@ export const signUp = mutation({
 
     const user = await ctx.db.get(userId);
     const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return { user: userWithoutPassword, ok: true };
   },
 });
 
