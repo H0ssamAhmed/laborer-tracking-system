@@ -110,8 +110,11 @@ export const unarchiveSingleExpense = mutation({
 });
 
 export const deleteAllExpense = mutation({
-  handler: async (ctx) => {
-    const allExpenses = await ctx.db.query("expenses").collect();
+  args: {
+    userId: v.string()
+  },
+  handler: async (ctx, args) => {
+    const allExpenses = await ctx.db.query("expenses").filter((q) => q.eq(q.field("userId"), args.userId)).collect();
     for (const expense of allExpenses) {
       await ctx.db.delete(expense._id);
     }
